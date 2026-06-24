@@ -16,9 +16,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
-const inPath = process.argv[2] || path.join(DIR, 'data', 'threads.sample.json');
+// prefer live threads if pull-gmail ran; fall back to sample
+const livePath   = path.join(DIR, 'data', 'threads.live.json');
+const samplePath = path.join(DIR, 'data', 'threads.sample.json');
+const inPath = process.argv[2]
+  || (fs.existsSync(livePath) ? livePath : samplePath);
 const outDir = path.join(DIR, 'out');
 fs.mkdirSync(outDir, { recursive: true });
+
+if (inPath === livePath) console.log('[extract] Using live Gmail threads:', livePath);
+else console.log('[extract] No live threads — using sample file');
 
 const threads = JSON.parse(fs.readFileSync(inPath, 'utf8'));
 
