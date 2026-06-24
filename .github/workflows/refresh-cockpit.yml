@@ -53,14 +53,14 @@ jobs:
           set +e
           npx --yes vercel@latest deploy --prod --yes \
             --token "$VERCEL_TOKEN" \
-            --scope swanhtet01s-projects \
             2>&1 | tee /tmp/vercel-out.txt
           DEPLOY_EXIT=${PIPESTATUS[0]}
           set -e
-          URL=$(grep -oE 'https://supermega-remote-[a-z0-9]+-swanhtet01s-projects\.vercel\.app' /tmp/vercel-out.txt | head -1)
+          cat /tmp/vercel-out.txt
+          URL=$(grep -oE 'https://supermega-remote-[a-z0-9.]+-swanhtet01s-projects\.vercel\.app|https://supermega-remote\.vercel\.app' /tmp/vercel-out.txt | head -1)
           if [ -n "$URL" ]; then
             npx --yes vercel@latest alias set "$URL" ops.supermega.dev \
-              --token "$VERCEL_TOKEN" --scope swanhtet01s-projects || true
+              --token "$VERCEL_TOKEN" || true
             echo "Aliased to ops.supermega.dev"
           fi
           exit $DEPLOY_EXIT
