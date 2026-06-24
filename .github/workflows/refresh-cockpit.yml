@@ -46,6 +46,12 @@ jobs:
           mkdir -p feed
           node refresh.mjs --no-llm
 
+      - name: Publish feed as static
+        run: |
+          for f in ytf-ops.json ytf-dashboard.json ytf-claims.json ytf-procurement.json ytf-raw-material.json; do
+            cp "feed/$f" "public/$f" 2>/dev/null || true
+          done
+
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
