@@ -15,4 +15,6 @@ ytf-ops-tools/node_modules/
 # Keep the directory structure
 !feed/.gitkeep
 !ytf-ops-tools/data/.gitkeep
+!ytf-ops-tools/data/threads.sample.json
+!ytf-ops-tools/data/retailers.sample.json
 !ytf-ops-tools/out/.gitkeep
