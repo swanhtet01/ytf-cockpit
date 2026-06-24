@@ -39,6 +39,29 @@ jobs:
           mkdir -p data/drive-cache data/raw out
           node pull-drive.mjs
 
+      - name: Fetch manual entries from app
+        env:
+          PANEL_TOKEN: ${{ secrets.PANEL_TOKEN_YTF }}
+        run: |
+          mkdir -p ytf-ops-tools/data/manual-entries
+          curl -sf -H "x-panel-token: $PANEL_TOKEN" \
+            https://ytf.supermega.dev/api/entries \
+            -o /tmp/ytf-raw.json || echo '{"entries":[]}' > /tmp/ytf-raw.json
+          node -e "
+            const d=JSON.parse(require('fs').readFileSync('/tmp/ytf-raw.json','utf8'));
+            const entries=(d.entries||[]).map(e=>({
+              kind:e.entry_type||'other',
+              date:(e.created_at||'').slice(0,10),
+              captured_via:'ytf-app',
+              owner:e.owner||e.role,
+              status:e.status,
+              fields:{what:e.what,where:e.where,area:e.plant+'/'+e.department,...JSON.parse(e.payload_json||'{}')},
+              source_text:e.what||e.where
+            }));
+            require('fs').writeFileSync('ytf-ops-tools/data/manual-entries/ytf-app-entries.json',JSON.stringify(entries,null,2));
+            console.log('entries fetched:',entries.length);
+          "
+
       - name: Rebuild feed
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
