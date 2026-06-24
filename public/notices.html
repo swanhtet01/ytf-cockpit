@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0755a5" />
+<link rel="icon" href="/ytf-mark.svg" />
+<title>Notices — Yangon Tyre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:wght@400..700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#F4F6F9; --panel:#FFFFFF; --panel2:#EEF2F7; --line:rgba(7,85,165,0.14);
+  --txt:#11233A; --muted:#566576; --accent:#0755a5; --accent2:#ec1c2e;
+  --ok:#16823F; --warn:#B25A0C; --bad:#ec1c2e; --chip:#EAF0F7;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+}
+:root[data-theme="dark"]{
+  --bg:#0B1622; --panel:#122236; --panel2:#0E1C2C; --line:rgba(220,235,255,0.10);
+  --txt:#EAF1F9; --muted:#90A2B6; --accent:#3F90E0; --accent2:#FF5A6A;
+  --ok:#5BA46F; --warn:#E8A23D; --bad:#FF5A6A; --chip:#122236;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-tap-highlight-color:transparent}
+body{padding:max(14px,env(safe-area-inset-top)) 14px calc(80px + env(safe-area-inset-bottom))}
+.wrap{max-width:680px;margin:0 auto}
+h1{font-family:var(--serif);font-weight:560;letter-spacing:-.02em;margin:0}
+header{display:flex;align-items:center;gap:10px;margin:4px 0 16px}
+header a.back{text-decoration:none;color:var(--accent);font-size:13px;background:var(--chip);
+  border:1px solid var(--line);padding:8px 11px;border-radius:10px;min-width:44px;min-height:44px;display:inline-grid;place-items:center}
+header h1{font-size:17px;font-weight:700}
+header .sub{font-size:11px;color:var(--muted);margin-top:1px}
+.spacer{flex:1}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+button{font-family:inherit;cursor:pointer}
+textarea,input,select{font-family:inherit;font-size:14px;color:var(--txt);background:var(--panel2);
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;outline:none}
+textarea{resize:vertical;min-height:80px;line-height:1.5}
+textarea:focus,input:focus,select:focus{border-color:var(--accent)}
+.btn{background:var(--accent);border:none;color:#fff;padding:12px 16px;border-radius:11px;
+  font-size:14px;font-weight:650;transition:transform .06s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--chip);border:1px solid var(--line);color:var(--accent)}
+.btn[disabled]{opacity:.5}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:4px}
+
+/* Notice cards */
+.notice{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px 14px;margin-bottom:9px;position:relative}
+.notice.urgent{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 5%,var(--panel))}
+.notice.announcement{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 4%,var(--panel))}
+.notice.handover{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 4%,var(--panel))}
+.notice .ntext{font-size:14px;line-height:1.55;margin:0 0 8px;white-space:pre-wrap}
+.notice .nmeta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pill{font-size:10px;padding:2px 7px;border-radius:999px;font-weight:700;white-space:nowrap;border:1px solid transparent}
+.pill.urgent{background:color-mix(in srgb,var(--bad) 14%,var(--panel));color:var(--bad)}
+.pill.announcement{background:color-mix(in srgb,var(--accent) 14%,var(--panel));color:var(--accent)}
+.pill.handover{background:color-mix(in srgb,var(--ok) 14%,var(--panel));color:var(--ok)}
+.pill.general{background:var(--chip);color:var(--muted)}
+.pill.group{background:var(--chip);color:var(--txt)}
+.notice .ntime{font-size:11px;color:var(--muted)}
+
+#toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:11px 16px;border-radius:12px;
+  box-shadow:0 8px 28px rgba(15,35,58,.18);font-size:13px;max-width:90vw;opacity:0;pointer-events:none;
+  transition:opacity .2s;z-index:50}
+#toast.show{opacity:1}
+#toast.bad{border-color:var(--bad)} #toast.ok{border-color:var(--ok)}
+
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:32px 0}
+
+/* compose form collapse */
+#composeWrap{display:none}
+#composeWrap.open{display:block}
+
+/* Compose FAB */
+#fab{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom));right:18px;
+  background:var(--accent);color:#fff;border:none;border-radius:50%;width:52px;height:52px;
+  font-size:22px;box-shadow:0 4px 20px rgba(7,85,165,.4);z-index:40;display:grid;place-items:center}
+#fab:active{transform:scale(.94)}
+
+@media (min-width:680px){.form-row{grid-template-columns:1fr 1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="/index.html" aria-label="Back to control panel">←</a>
+    <img src="/ytf-mark.svg" alt="Yangon Tyre" style="width:34px;height:34px;flex:0 0 auto" />
+    <div>
+      <h1>Notice Board</h1>
+      <div class="sub" id="sub">Yangon Tyre team</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" id="composeBtn" style="font-size:13px;padding:10px 14px">+ Post</button>
+  </header>
+
+  <!-- Compose panel -->
+  <div id="composeWrap">
+    <div class="card" style="border-color:var(--accent)">
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--accent)">Post a notice</div>
+      <div class="form-row">
+        <div>
+          <label for="nGroup">Group</label>
+          <select id="nGroup">
+            <option value="head-office">Head Office</option>
+            <option value="plant-a">Plant A</option>
+            <option value="plant-b">Plant B</option>
+            <option value="all-plants">All Plants</option>
+          </select>
+        </div>
+        <div>
+          <label for="nType">Type</label>
+          <select id="nType">
+            <option value="general">General</option>
+            <option value="announcement">Announcement</option>
+            <option value="handover">Shift Handover</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+      </div>
+      <label for="nText" style="margin-bottom:4px">Message</label>
+      <textarea id="nText" placeholder="Type your notice here…&#10;&#10;For handovers, include: output, rejects, machine issues, priorities for next shift." maxlength="1000"></textarea>
+      <div style="font-size:11px;color:var(--muted);text-align:right;margin:3px 0 10px" id="charCount">0 / 1000</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="postBtn" style="flex:1">Post notice</button>
+        <button class="btn ghost" id="cancelBtn">Cancel</button>
+      </div>
+      <div id="postStatus" style="font-size:12px;color:var(--muted);margin-top:8px;min-height:14px"></div>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap" id="filterBar">
+    <button class="pill general" data-filter="all" style="cursor:pointer;padding:6px 12px;font-size:12px;background:var(--accent);color:#fff;border-color:var(--accent)">All</button>
+    <button class="pill urgent" data-filter="urgent" style="cursor:pointer;padding:6px 12px;font-size:12px">Urgent</button>
+    <button class="pill announcement" data-filter="announcement" style="cursor:pointer;padding:6px 12px;font-size:12px">Announcements</button>
+    <button class="pill handover" data-filter="handover" style="cursor:pointer;padding:6px 12px;font-size:12px">Handovers</button>
+  </div>
+
+  <div id="noticeList"><div class="empty">Loading notices…</div></div>
+</div>
+
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// ── auth (same as main panel) ──────────────────────────────────────────────
+let TOKEN = '';
+function auth(){ return {'x-panel-token': TOKEN, 'content-type':'application/json'}; }
+async function api(action, method='GET', body=null){
+  const res = await fetch(`/api/control?action=${action}`,{method, headers:auth(), body:body?JSON.stringify(body):undefined});
+  return res.json();
+}
+
+// ── theme ──────────────────────────────────────────────────────────────────
+const saved = localStorage.getItem('ytf-theme');
+if(saved) document.documentElement.setAttribute('data-theme', saved);
+
+// ── token from storage ─────────────────────────────────────────────────────
+TOKEN = localStorage.getItem('sm_remote_token') || '';
+if(!TOKEN){ window.location.href = '/index.html'; }
+
+// ── toast ──────────────────────────────────────────────────────────────────
+let _t;
+function toast(msg, cls=''){
+  const el=$('toast'); el.textContent=msg; el.className='show '+(cls||'');
+  clearTimeout(_t); _t=setTimeout(()=>el.className='',2800);
+}
+
+// ── compose ────────────────────────────────────────────────────────────────
+$('composeBtn').onclick = () => {
+  const w = $('composeWrap');
+  const open = w.classList.toggle('open');
+  $('composeBtn').textContent = open ? '✕ Cancel' : '+ Post';
+  if(open) $('nText').focus();
+};
+$('cancelBtn').onclick = () => {
+  $('composeWrap').classList.remove('open');
+  $('composeBtn').textContent = '+ Post';
+};
+$('nText').oninput = () => {
+  $('charCount').textContent = `${$('nText').value.length} / 1000`;
+};
+
+$('postBtn').onclick = async () => {
+  const text = $('nText').value.trim();
+  if(!text){ toast('Please type a message first.', 'bad'); return; }
+  $('postBtn').disabled = true;
+  $('postStatus').textContent = 'Posting…';
+  try {
+    const data = await api('notices','POST',{ text, group: $('nGroup').value, type: $('nType').value });
+    if(data.ok){
+      toast('Notice posted!', 'ok');
+      $('nText').value = ''; $('charCount').textContent = '0 / 1000';
+      $('composeWrap').classList.remove('open');
+      $('composeBtn').textContent = '+ Post';
+      loadNotices();
+    } else if(data.download){
+      // Serverless FS read-only — download JSON for admin to drop in feed folder
+      const blob = new Blob([JSON.stringify(data.notice, null, 2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `notice-${Date.now()}.json`;
+      a.click();
+      $('postStatus').textContent = 'Downloaded notice file — drop it in the feed folder and run sync.';
+      toast('Downloaded — see instructions below', 'warn');
+    } else {
+      $('postStatus').textContent = data.error || 'Error posting.';
+      toast(data.error || 'Error', 'bad');
+    }
+  } catch(e){ toast('Network error', 'bad'); $('postStatus').textContent = ''; }
+  finally { $('postBtn').disabled = false; }
+};
+
+// ── filter ─────────────────────────────────────────────────────────────────
+let activeFilter = 'all';
+$('filterBar').addEventListener('click', e => {
+  const btn = e.target.closest('[data-filter]');
+  if(!btn) return;
+  activeFilter = btn.dataset.filter;
+  [...$('filterBar').querySelectorAll('[data-filter]')].forEach(b => {
+    const on = b.dataset.filter === activeFilter;
+    b.style.background = on ? 'var(--accent)' : '';
+    b.style.color = on ? '#fff' : '';
+    b.style.borderColor = on ? 'var(--accent)' : '';
+  });
+  renderNotices(window._notices || []);
+});
+
+// ── render ─────────────────────────────────────────────────────────────────
+const TYPE_LABEL = { announcement:'Announcement', handover:'Handover', urgent:'URGENT', general:'General' };
+const ROLE_LABEL = { admin:'Admin', ceo:'CEO', manager:'Manager', plant_manager:'Plant Mgr' };
+
+function fmtTime(iso){
+  try{
+    const d = new Date(iso);
+    const now = new Date();
+    const diff = now - d;
+    if(diff < 60000) return 'just now';
+    if(diff < 3600000) return Math.floor(diff/60000)+'m ago';
+    if(diff < 86400000) return Math.floor(diff/3600000)+'h ago';
+    return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) +
+           ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  } catch { return iso; }
+}
+
+function renderNotices(all){
+  const list = activeFilter === 'all' ? all : all.filter(n=>n.type===activeFilter);
+  if(!list.length){
+    $('noticeList').innerHTML = '<div class="empty">No notices yet' +
+      (activeFilter!=='all' ? ' for this filter' : '') + '.</div>';
+    return;
+  }
+  $('noticeList').innerHTML = list.map(n => `
+    <div class="notice ${esc(n.type||'general')}">
+      <p class="ntext">${esc(n.text)}</p>
+      <div class="nmeta">
+        <span class="pill ${esc(n.type||'general')}">${esc(TYPE_LABEL[n.type]||n.type)}</span>
+        ${n.group?`<span class="pill group">${esc(n.group)}</span>`:''}
+        <span class="ntime">${fmtTime(n.posted_at)}</span>
+        ${n.role?`<span class="ntime">· ${esc(ROLE_LABEL[n.role]||n.role)}</span>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── load ───────────────────────────────────────────────────────────────────
+async function loadNotices(){
+  try{
+    const data = await api('notices');
+    if(data.error){ $('noticeList').innerHTML = `<div class="empty">${esc(data.error)}</div>`; return; }
+    window._notices = data.notices || [];
+    $('sub').textContent = `${window._notices.length} notice${window._notices.length!==1?'s':''} · ${esc(data.role||'')}`;
+    renderNotices(window._notices);
+  } catch(e){ $('noticeList').innerHTML = '<div class="empty">Could not load notices.</div>'; }
+}
+
+loadNotices();
+// auto-refresh every 90s so shift handovers appear without reload
+setInterval(loadNotices, 90000);
+</script>
+</body>
+</html>

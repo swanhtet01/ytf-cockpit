@@ -1,0 +1,51 @@
+# Cloud auto-refresh for the Yangon Tyre ops cockpit — fully hands-off, no PC required.
+# Reuses the exact working scripts (pull-drive via service account -> refresh -> deploy -> alias).
+#
+# SETUP (one time):
+#   1) Push this repo to GitHub, then MOVE this file to:  .github/workflows/refresh-cockpit.yml
+#   2) GitHub repo → Settings → Secrets and variables → Actions → add:
+#        GOOGLE_SA_KEY   = the full contents of the service-account JSON
+#                          (super-mega-dev-team@supermega-468612 — has read on the "Yangon Tyre" Drive folder)
+#        VERCEL_TOKEN    = a Vercel token with deploy rights to swanhtet01s-projects
+#   3) Done — it runs every day at 01:00 UTC (and on-demand via the "Run workflow" button).
+#
+# It NEVER touches ytf.supermega.dev (that is the supermega-ytf ERP); it only publishes ops.supermega.dev.
+
+name: Refresh YTF ops cockpit
+on:
+  schedule:
+    - cron: '0 1 * * *'   # daily 01:00 UTC (~07:30 Myanmar)
+  workflow_dispatch: {}    # manual "Run workflow" button
+
+concurrency:
+  group: refresh-cockpit
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      - name: Pull latest Drive workbooks (service account)
+        working-directory: ytf-ops-tools
+        env:
+          GOOGLE_SA_KEY: ${{ secrets.GOOGLE_SA_KEY }}
+        run: node pull-drive.mjs
+
+      - name: Rebuild the private feed
+        working-directory: supermega-remote
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # optional — enables whiteboard-photo OCR
+        run: node refresh.mjs
+
+      - name: Deploy to Vercel (production) + alias ops.supermega.dev
+        working-directory: supermega-remote
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          URL=$(npx --yes vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN" --scope swanhtet01s-projects | grep -oE 'https://supermega-remote-[a-z0-9]+-swanhtet01s-projects.vercel.app' | head -1)
+          echo "deployed: $URL"
+          npx --yes vercel@latest alias set "$URL" ops.supermega.dev --token "$VERCEL_TOKEN" --scope swanhtet01s-projects

@@ -1,0 +1,46 @@
+{
+  "_comment": "Canonical LIVE data sources in the Google Drive 'Yangon Tyre' folder (1lvNk73XNxIdPIagwal7YKEzlCtAkk-yv). The OneDrive/_tmp local files are ARCHIVED. To refresh: download each fileId via the Drive connector (download_file_content), decode with lib/decode-drive.mjs into data/drive-cache/<cache>, then run refresh.mjs. The generators prefer data/drive-cache/ over archived copies.",
+  "drive_folder": "1lvNk73XNxIdPIagwal7YKEzlCtAkk-yv",
+  "files": [
+    {
+      "role": "tyre-production",
+      "fileId": "1Oprx19I-OXe0Lh14LAXHfQoj4mU84mxv",
+      "title": "Monthly Tyre Production 2026.xlsx",
+      "owner": "yangontyrefactory.bilin@gmail.com",
+      "cache": "Monthly Tyre Production 2026.xlsx",
+      "consumed_by": "production.mjs"
+    },
+    {
+      "role": "stock-balance",
+      "fileId": "1iLtVwHkvzL7K4Cr4u4uL4nJki9ou22TV",
+      "title": "Monthly Stock Balance 2026.xlsx",
+      "owner": "yangontyrefactory.bilin@gmail.com",
+      "cache": "Monthly Stock Balance 2026.xlsx",
+      "consumed_by": "stock-balance.mjs"
+    },
+    {
+      "role": "raw-stock-balance-detailed",
+      "fileId": "16iGeLhZawhl0tKSKCUhuOqG1KsP4EVTy",
+      "title": "( 2 )Monthly Raw Stock Balance 2026.xlsx",
+      "owner": "ytpdoffice01@gmail.com",
+      "cache": "Monthly Raw Stock Balance 2026.xlsx",
+      "consumed_by": "stock-balance.mjs (alt, larger/newer)"
+    },
+    {
+      "role": "retailer-database",
+      "fileId": "1ljTvmbPsw7XlZHLiQbfjrfWlqZehGzjwj0ZX_NYJsU4",
+      "title": "Retailer Database",
+      "owner": "swannyhtet@gmail.com",
+      "cache": null,
+      "consumed_by": "retailers.mjs (currently uses H2-2024 rebate sample)"
+    },
+    {
+      "role": "data-sources-index",
+      "fileId": "1YYve0jCr09NmtsWwEKtY2kQOg1c_ipAPxtQc1J_t2_8",
+      "title": "data sources",
+      "owner": "swannyhtet@gmail.com",
+      "cache": null,
+      "consumed_by": "drive-sources.mjs"
+    }
+  ]
+}

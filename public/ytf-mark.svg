@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="t d">
+  <title id="t">Yangon Tyre</title>
+  <desc id="d">Circular YT monogram in Yangon Tyre blue and red.</desc>
+  <circle cx="80" cy="80" r="78" fill="#ffffff"/>
+  <circle cx="80" cy="80" r="75" fill="none" stroke="#0755a5" stroke-width="7"/>
+  <circle cx="80" cy="80" r="60" fill="none" stroke="#ec1c2e" stroke-width="5"/>
+  <text x="60" y="106" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="78" fill="#0755a5" text-anchor="middle">Y</text>
+  <text x="98" y="106" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="78" fill="#ec1c2e" text-anchor="middle">T</text>
+</svg>

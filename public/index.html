@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0755a5" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Yangon Tyre" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<link rel="icon" href="/ytf-mark.svg" />
+<link rel="apple-touch-icon" href="/ytf-mark.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:wght@400..700&display=swap" rel="stylesheet" />
+<title>SuperMega Remote</title>
+<style>
+  :root{
+    /* Yangon Tyre — default light theme: YTF blue + red on white, daylight-readable on factory phones */
+    --bg:#F4F6F9; --panel:#FFFFFF; --panel2:#EEF2F7; --line:rgba(7,85,165,0.14);
+    --txt:#11233A; --muted:#566576; --accent:#0755a5; --accent2:#ec1c2e;
+    --ok:#16823F; --warn:#B25A0C; --bad:#ec1c2e; --chip:#EAF0F7;
+    --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  }
+  /* Optional dark (navy) variant — opt-in via data-theme="dark" */
+  :root[data-theme="dark"]{
+    --bg:#0B1622; --panel:#122236; --panel2:#0E1C2C; --line:rgba(220,235,255,0.10);
+    --txt:#EAF1F9; --muted:#90A2B6; --accent:#3F90E0; --accent2:#FF5A6A;
+    --ok:#5BA46F; --warn:#E8A23D; --bad:#FF5A6A; --chip:#122236;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-tap-highlight-color:transparent}
+  h1,.statusbar .big,#brandGate,#brandHdr{font-family:var(--serif);font-weight:560;letter-spacing:-.02em}
+  body{padding:max(14px,env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom))}
+  .wrap{max-width:560px;margin:0 auto}
+  header{display:flex;align-items:center;gap:10px;margin:4px 0 16px}
+  header .logo{width:36px;height:36px;display:grid;place-items:center}
+  header .logo img,.gatemark img{width:100%;height:100%;display:block}
+  header h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.2px}
+  header .sub{font-size:11px;color:var(--muted);margin-top:1px}
+  .spacer{flex:1}
+  .iconbtn{background:var(--chip);border:1px solid var(--line);color:var(--txt);width:44px;height:44px;
+    border-radius:10px;font-size:16px;display:grid;place-items:center}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+  @media (prefers-reduced-motion: reduce){ .spin{animation:none} *{animation-duration:.001ms!important;transition-duration:.001ms!important} }
+  button{font-family:inherit;cursor:pointer}
+
+  /* gate */
+  #gate{display:grid;gap:12px;margin-top:18vh;animation:fade .3s ease}
+  #gate p{color:var(--muted);font-size:13px;text-align:center;margin:0}
+  .field{display:flex;gap:8px}
+  input{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--txt);
+    padding:14px;border-radius:12px;font-size:16px;outline:none}
+  input:focus{border-color:var(--accent)}
+  .btn{background:var(--accent);border:none;color:#fff;padding:14px 16px;border-radius:12px;
+    font-size:15px;font-weight:650;transition:transform .06s ease, opacity .2s}
+  .btn:active{transform:scale(.97)}
+  .btn.full{width:100%}
+  .btn[disabled]{opacity:.5}
+  .btn.ghost{background:var(--chip);border:1px solid var(--line)}
+
+  /* status */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+  .statusbar{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 0 rgba(0,0,0,0)}
+  .dot.ok{background:var(--ok);box-shadow:0 0 10px color-mix(in srgb,var(--ok) 55%,transparent)}
+  .dot.bad{background:var(--bad);box-shadow:0 0 10px color-mix(in srgb,var(--bad) 55%,transparent)}
+  .dot.warn{background:var(--warn)}
+  summary::-webkit-details-marker{display:none}
+  .statusbar .big{font-size:16px;font-weight:700}
+  .statusbar .when{margin-left:auto;font-size:11px;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .tile{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 11px}
+  .tile .k{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .tile .v{font-size:14px;font-weight:650;margin-top:3px;display:flex;align-items:center;gap:6px}
+  .pill{font-size:10px;padding:2px 7px;border-radius:999px;font-weight:700}
+  .pill.ok{background:color-mix(in srgb,var(--ok) 14%,var(--panel));color:var(--ok)}
+  .pill.bad{background:color-mix(in srgb,var(--bad) 14%,var(--panel));color:var(--bad)}
+  .pill.warn{background:color-mix(in srgb,var(--warn) 16%,var(--panel));color:var(--warn)}
+  .pill.mut{background:var(--chip);color:var(--muted)}
+  .gauge{height:7px;border-radius:99px;background:var(--chip);overflow:hidden;margin-top:8px}
+  .gauge>span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--warn))}
+
+  .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:18px 4px 8px}
+  .jobs{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .job{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px 12px;
+    text-align:left;color:var(--txt);position:relative;min-height:58px;transition:transform .06s,border-color .2s}
+  .job:active{transform:scale(.97)}
+  .job.primary{grid-column:1 / -1;background:var(--panel2);border-color:var(--accent)}
+  .job .jl{font-size:14px;font-weight:650}
+  .job .jg{font-size:10.5px;color:var(--muted);margin-top:2px}
+  .job .run{position:absolute;top:11px;right:11px;font-size:11px;color:var(--accent)}
+  .job.busy{opacity:.7;pointer-events:none}
+  .job.done{border-color:var(--ok)}
+  .job.err{border-color:var(--bad)}
+
+  /* toast / log */
+  #toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);
+    background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:11px 16px;border-radius:12px;box-shadow:0 8px 28px rgba(15,35,58,.18);
+    font-size:13px;max-width:90vw;opacity:0;pointer-events:none;
+    transition:opacity .2s, transform .2s;z-index:50}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.bad{border-color:var(--bad)} #toast.ok{border-color:var(--ok)}
+  details.log{margin-top:14px}
+  details.log summary{color:var(--muted);font-size:12px;cursor:pointer;padding:6px 2px}
+  pre{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;overflow:auto;
+    font-size:11px;line-height:1.5;color:var(--muted);max-height:40vh;margin:6px 0 0}
+  .hide{display:none!important}
+  .row{display:flex;gap:8px;align-items:center}
+  .muted{color:var(--muted);font-size:12px}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .spin{animation:spin 1s linear infinite;display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* responsive: phone = single column; tablet/desktop = wide multi-column dashboard */
+  .cards{display:grid;gap:12px}
+  @media (min-width:760px){
+    .wrap{max-width:1180px}
+    body{padding-left:22px;padding-right:22px}
+    .cards{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start}
+    .grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+    .jobs{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+    .job.primary{grid-column:span 2}
+    header h1{font-size:19px}
+  }
+  @media (min-width:1100px){ .grid{grid-template-columns:repeat(auto-fit,minmax(155px,1fr))} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ GATE ============ -->
+  <section id="gate">
+    <div style="text-align:center">
+      <div class="gatemark" style="width:64px;height:64px;margin:0 auto 12px"><img src="/ytf-mark.svg" alt="Yangon Tyre" /></div>
+      <h1 style="margin:0;font-size:20px" id="brandGate">SuperMega Remote</h1>
+      <p style="margin-top:6px">Enter your panel passcode</p>
+    </div>
+    <div class="field">
+      <label for="token" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Panel passcode</label>
+      <input id="token" type="password" inputmode="text" autocomplete="current-password" placeholder="Panel passcode" aria-label="Panel passcode" />
+    </div>
+    <button class="btn full" id="unlock">Unlock</button>
+    <p id="gateMsg" class="muted" style="text-align:center;min-height:16px"></p>
+  </section>
+
+  <!-- ============ APP ============ -->
+  <section id="app" class="hide">
+    <header>
+      <div class="logo"><img src="/ytf-mark.svg" alt="Yangon Tyre" /></div>
+      <div>
+        <h1 id="brandHdr">Yangon Tyre</h1>
+        <div class="sub" id="hdrSub">operations cockpit</div>
+      </div>
+      <div class="spacer"></div>
+      <span class="dot" id="hdrDot" title="system status" style="margin-right:4px"></span>
+      <button class="iconbtn" id="refresh" title="Refresh" aria-label="Refresh status">⟳</button>
+      <button class="iconbtn" id="lock" title="Lock" aria-label="Lock and sign out">⏏</button>
+    </header>
+
+    <div class="cards">
+    <!-- OPERATIONS — the hero: what the owner/manager opens to see -->
+    <div class="card" id="opsCard">
+      <div class="statusbar">
+        <span class="big" id="opsCardTitle">Operations</span>
+        <span class="when" id="opsAsOf"></span>
+      </div>
+      <div class="grid" id="opsTiles"><div class="tile" style="grid-column:1/-1"><div class="v muted" style="font-weight:500">Loading…</div></div></div>
+      <div id="opsAlerts"></div>
+      <div class="row" style="margin-top:13px;gap:8px;flex-wrap:wrap">
+        <a class="btn" id="entryLink" href="/entry.html" style="flex:1 1 46%;text-align:center;text-decoration:none;font-size:14px;padding:12px">+ Capture</a>
+        <a class="btn ghost" id="opsLink" href="/ops.html" style="flex:1 1 46%;text-align:center;text-decoration:none;font-size:14px;padding:12px">Full detail →</a>
+        <a class="btn ghost" id="noticesLink" href="/notices.html" style="flex:1 1 46%;text-align:center;text-decoration:none;font-size:14px;padding:12px">📋 Notices</a>
+        <a class="btn ghost" href="/guide.html" style="flex:1 1 46%;text-align:center;text-decoration:none;font-size:14px;padding:12px">📖 User Guide</a>
+        <a class="btn ghost" id="erpLink" href="https://ytf.supermega.dev/" target="_blank" rel="noopener" style="flex:1 1 100%;text-align:center;text-decoration:none;font-size:13.5px;padding:11px">Open full ERP (data entry, close, payroll) →</a>
+      </div>
+    </div>
+
+    <div class="card" id="searchCard">
+      <div class="statusbar">
+        <span class="big">Search</span>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <input id="searchQ" type="search" inputmode="search" placeholder="Search tyres, materials, claims, TFT, stock, actions..." aria-label="Search operations data" autocomplete="off" />
+      </div>
+      <div id="searchChips" role="group" aria-label="Search shortcuts" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px"></div>
+      <div id="searchResults" role="status" aria-live="polite" aria-atomic="true" class="muted" style="margin-top:11px;font-size:13px;line-height:1.5">Type to search stock, claims, procurement, tyre sizes, and actions.</div>
+    </div>
+    </div><!-- /cards -->
+
+    <!-- SYSTEM & PIPELINE — collapsed; admin/operator detail, not the owner's first view -->
+    <details class="syscard" id="sysDetails">
+      <summary class="section-title" style="cursor:pointer;list-style:none">⚙ System &amp; pipeline <span class="muted" id="sysSummary" style="text-transform:none;letter-spacing:0">— tap to expand</span></summary>
+      <div class="card" style="margin-top:10px">
+        <div class="statusbar">
+          <span class="dot" id="dot"></span>
+          <span class="big" id="bigStatus">Checking…</span>
+          <span class="when" id="when"></span>
+        </div>
+        <div class="sub muted" id="liveBase" style="margin:2px 0 8px"></div>
+        <div class="grid" id="tiles"></div>
+        <div class="muted" id="coverageLabel" style="margin-top:12px">Data coverage</div>
+        <div class="gauge"><span id="coverageBar" style="width:0%"></span></div>
+      </div>
+      <div class="section-title">Pipeline — structured data</div>
+      <div class="jobs" id="jobsPipeline"></div>
+      <div class="section-title">Insight &amp; agents</div>
+      <div class="jobs" id="jobsOther"></div>
+      <details class="log"><summary>Last response</summary><pre id="log">—</pre></details>
+    </details>
+  </section>
+</div>
+
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+// white-label config (per-deploy branding + modules + feed namespace) — see public/config.json + TEMPLATE.md
+let CONFIG = {};
+// feed file name for a given suffix, namespaced by config (must match the server's FEED_PREFIX env)
+const feedFile = (suffix) => `${(CONFIG.feed_prefix||'ytf')}-${suffix}`;
+// module visibility: a section shows unless config explicitly sets modules.<name> === false
+const MOD = (name) => !CONFIG.modules || CONFIG.modules[name] !== false;
+// monogram for the logo badge: explicit config, else initials of brand/instance, else "SM"
+function monogram(){
+  if(CONFIG.monogram) return String(CONFIG.monogram).slice(0,2).toUpperCase();
+  const base = CONFIG.brand || CONFIG.instance || 'SuperMega';
+  const parts = String(base).split(/\s+/).filter(Boolean);
+  return ((parts[0]||'S')[0] + (parts[1]? parts[1][0] : (parts[0]||'M')[1]||'M')).toUpperCase();
+}
+const CONFIG_READY = fetch('/config.json',{cache:'no-store'}).then(r=>r.ok?r.json():{}).then(c=>{
+  CONFIG = c||{};
+  const brand = c.brand ? ((c.instance && c.instance !== c.brand) ? `${c.brand} · ${c.instance}` : c.brand) : (c.instance || null);
+  if(brand){ document.title = brand; if($('brandGate')) $('brandGate').textContent = brand; if($('brandHdr')) $('brandHdr').textContent = brand; }
+  if(c.accent){
+    document.documentElement.style.setProperty('--accent', c.accent);
+    document.documentElement.style.setProperty('--accent2', c.accent2 || c.accent);   // keep a distinct secondary (YTF red)
+    const tc = document.querySelector('meta[name="theme-color"]'); if(tc) tc.setAttribute('content', c.accent);
+  }
+  // theme: default is YTF light; only opt into the navy dark variant
+  if(c.theme === 'dark') document.documentElement.dataset.theme = 'dark'; else document.documentElement.removeAttribute('data-theme');
+  // logo: config.logo (an image, e.g. the circular YT mark) wins; else fall back to the monogram badge
+  if(c.logo){ document.querySelectorAll('.logo img,.gatemark img').forEach(im=>{ im.src = c.logo; im.alt = c.instance || c.brand || 'logo'; }); }
+  else { const mg = monogram(); document.querySelectorAll('[data-monogram]').forEach(elm=>{ elm.textContent = mg; }); if(c.accent) document.querySelectorAll('[data-logo]').forEach(elm=>{ elm.style.background = `linear-gradient(135deg, var(--accent), var(--accent2))`; }); }
+  if($('opsCardTitle')) $('opsCardTitle').textContent = c.instance ? `${c.instance} Ops` : (c.brand || 'Ops');
+  if(c.search_placeholder && $('searchQ')) $('searchQ').setAttribute('placeholder', c.search_placeholder);
+  return CONFIG;
+}).catch(()=>CONFIG);
+const LS_KEY = 'sm_remote_token';
+let TOKEN = localStorage.getItem(LS_KEY) || '';
+let pollTimer = null;
+
+function toast(msg, kind){
+  const t = $('toast'); t.textContent = msg; t.className = 'show ' + (kind||'');
+  clearTimeout(toast._t); toast._t = setTimeout(()=>{ t.className=''; }, 2600);
+}
+async function api(action, opts={}){
+  const r = await fetch('/api/control?action='+encodeURIComponent(action)+(opts.qs||''), {
+    method: opts.method||'GET',
+    headers: { 'x-panel-token': TOKEN, ...(opts.headers||{}) },
+    body: opts.body,
+  });
+  const data = await r.json().catch(()=>({error:'bad json'}));
+  return { status:r.status, data };
+}
+
+// ---------- gate ----------
+async function tryUnlock(tok){
+  $('gateMsg').textContent = 'Checking…';
+  TOKEN = tok;
+  const { status, data } = await api('status');
+  if(status !== 200){
+    TOKEN='';
+    $('gateMsg').textContent = status === 401
+      ? 'Wrong passcode.'
+      : (data && data.error) || ('Server not ready ('+status+'). Set PANEL_TOKEN in Vercel.');
+    return false;
+  }
+  localStorage.setItem(LS_KEY, tok);
+  enterApp(); renderStatus(data);
+  return true;
+}
+$('unlock').onclick = ()=>{ const v=$('token').value.trim(); if(v){ tryUnlock(v); } else { $('gateMsg').textContent='Enter your passcode'; $('token').focus(); } };
+$('token').addEventListener('keydown', e=>{ if(e.key==='Enter') $('unlock').click(); });
+
+let WHO = { role: 'plant_manager', email_access: false, groups: [] };   // least-privilege default until whoami resolves (security)
+async function enterApp(){
+  $('gate').classList.add('hide'); $('app').classList.remove('hide');
+  await CONFIG_READY;                 // ensure feed_prefix + modules are known before fetching data
+  try{ const w = await (await fetch('/api/control?action=whoami',{headers:{'x-panel-token':TOKEN},cache:'no-store'})).json(); if(w&&w.role) WHO = { ...WHO, ...w, email_access: w.email_access === true, groups: Array.isArray(w.groups)?w.groups:[] }; }catch(e){}
+  const roleLabel = String(WHO.role||'').replace('_',' ');
+  if($('hdrSub')) $('hdrSub').textContent = (CONFIG.tagline || 'operations cockpit') + (roleLabel ? ` · ${roleLabel}` : '');
+  loadJobs(); loadOps(); startPolling(); initSearch(); loadNoticesBadge();
+}
+const emailOK = ()=> WHO.email_access === true;   // Gmail-derived modules (claims/procurement/raw-material) = CEO only (fail-closed)
+
+// ---------- universal search (no AI, no keys — pure client-side over the live ledgers) ----------
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+const safeHref = (u)=> /^https?:\/\//i.test(String(u||'')) ? String(u) : '';
+const SEARCH_CHIPS = ['carbon','reorder','radial','diesel','top dealer','TFT','rejected'];
+let SEARCH_INDEX = null, searchT = null;
+const fmtB = (n)=> n==null?'—':(n/1e9).toFixed(2)+'B';
+
+function initSearch(){
+  const chips = (CONFIG.search_chips && CONFIG.search_chips.length) ? CONFIG.search_chips : SEARCH_CHIPS;
+  $('searchChips').innerHTML = chips.map(q=>`<button class="pill mut" style="border:1px solid var(--line);cursor:pointer" data-q="${esc(q)}">${esc(q)}</button>`).join('');
+  document.querySelectorAll('#searchChips [data-q]').forEach(b=> b.onclick=()=>{ $('searchQ').value=b.dataset.q; runSearch(); });
+  $('searchQ').addEventListener('input', ()=>{ clearTimeout(searchT); searchT=setTimeout(runSearch, 140); });
+  buildIndex(); // warm the index
+}
+async function getData(file){
+  const r = await fetch('/api/control?action=data&file='+file, {headers:{'x-panel-token':TOKEN},cache:'no-store'});
+  if(r.status===401){ lock(); throw 'auth'; }
+  return r.ok ? r.json() : null;
+}
+let INDEX_P = null;
+async function buildIndex(){
+  if(SEARCH_INDEX) return SEARCH_INDEX;
+  if(INDEX_P) return INDEX_P;                 // coalesce concurrent callers onto one in-flight build
+  INDEX_P = (async()=>{
+    try{
+      const emailFeeds = emailOK();   // only the CEO role may fetch the Gmail-derived ledgers
+      const [ops, claims, proc] = await Promise.all([getData(feedFile('ops')), emailFeeds?getData(feedFile('claims')):null, emailFeeds?getData(feedFile('procurement')):null]);
+      const idx = [];
+      const push = (type, title, sub) => idx.push({ type, title:String(title||''), sub:String(sub||''), hay:(String(title||'')+' '+String(sub||'')+' '+type).toLowerCase() });
+      // each source is gated by its module toggle AND isolated in its own try — one malformed row can't kill all search
+      const part = (on, fn)=>{ if(on){ try{ fn(); }catch(_){} } };
+      part(MOD('stock_balance'), ()=> (ops?.stock_balance?.materials||[]).forEach(m=> push('Material', String(m.material||'').trim(), `${(m.closing||0).toLocaleString()} ${m.unit} · ${m.months_cover==null?'—':m.months_cover+'mo'} cover · ${m.status}`)));
+      part(MOD('inventory'),     ()=> (ops?.inventory?.in_transit||[]).forEach(s=> push('In transit', s.material, `${s.qty_mt?s.qty_mt+'mt':''} ${s.eta?('ETA '+s.eta):''} · ${s.supplier||''}`)));
+      part(MOD('distribution'),  ()=> (ops?.retailers?.top_dealers||[]).forEach(dl=> push('Dealer', dl.shop||dl.code, `${dl.township||''} ${dl.region||''} · ${fmtB(dl.total_amount)} · ${(dl.total_qty||0).toLocaleString()} units`)));
+      part(MOD('production_fg'), ()=> (ops?.production_fg?.top_sizes||[]).forEach(s=> push('Tyre size', s.size, `${(s.total||0).toLocaleString()} produced · grade-A ${s.a||0}`)));
+      part(MOD('intelligence'),  ()=> (ops?.insights?.signals||[]).forEach(s=> push('Signal·'+s.severity, s.title, s.detail)));
+      part(MOD('data_sources'),  ()=> (ops?.drive_sources||[]).forEach(s=> push('Source', s.name, `${s.owner||''} · as of ${s.as_of||'?'} · ${s.status}`)));
+      part(MOD('financials'),    ()=>{ if(ops?.finance?.pl){ const f=ops.finance.pl; push('Finance', `Revenue ${fmtB(f.revenue)} · Net ${fmtB(f.net_profit)} (${f.net_margin_pct||0}%)`, `${ops.finance.period} · cash ${fmtB(ops.finance.cash&&ops.finance.cash.balance)}`); } });
+      part(MOD('claims') && emailOK(),      ()=> (claims?.rows||[]).forEach(c=> push('Claim', c.claim_id, `${c.product} · ${c.status} · ${c.date}`)));
+      part(MOD('procurement') && emailOK(), ()=> (proc?.rows||[]).forEach(p=> push('Procurement', 'TFT('+p.tft_ref+')', `${p.date} · ${p.supplier||''} · ${(p.note||p.subject||'').slice(0,70)}`)));
+      SEARCH_INDEX = idx;
+    }catch(e){ if(e!=='auth') $('searchResults').textContent='⚠ could not load data for search.'; }
+    finally{ INDEX_P = null; }
+    return SEARCH_INDEX;
+  })();
+  return INDEX_P;
+}
+async function runSearch(){
+  const q = $('searchQ').value.trim().toLowerCase();
+  const out = $('searchResults');
+  if(!q){ out.classList.add('muted'); out.textContent='Type to search stock, claims, procurement, tyre sizes, and actions.'; return; }
+  out.classList.remove('muted');
+  const idx = await buildIndex();
+  if(!idx){ return; }
+  const terms = q.split(/\s+/).filter(Boolean);
+  const hits = idx.filter(r=> terms.every(t=> r.hay.includes(t)));
+  if(!hits.length){ out.innerHTML = `<span class="muted">No matches for “${esc(q)}”.</span>`; return; }
+  // group by base type, cap per group + overall
+  const groups = {}; for(const h of hits){ const g=h.type.split('·')[0]; (groups[g]=groups[g]||[]).push(h); }
+  const sevPill=(t)=> t.includes('critical')?'bad':t.includes('high')?'warn':'mut';
+  let html = `<div class="muted" style="font-size:11px;margin-bottom:6px">${hits.length} match${hits.length===1?'':'es'}</div>`;
+  for(const [g, arr] of Object.entries(groups)){
+    html += `<div style="margin-top:8px"><div class="k" style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">${esc(g)} <span style="opacity:.6">${arr.length}</span></div>`;
+    html += arr.slice(0,6).map(h=>`<div style="padding:6px 0;border-bottom:1px solid var(--panel2)">
+      <div style="font-weight:650;font-size:13px">${h.type.startsWith('Signal')?`<span class="pill ${sevPill(h.type)}" style="font-size:9px;margin-right:5px">${h.type.split('·')[1]||''}</span>`:''}${esc(h.title)}</div>
+      <div class="muted" style="font-size:11.5px;margin-top:1px">${esc(h.sub)}</div></div>`).join('');
+    if(arr.length>6) html += `<div class="muted" style="font-size:10.5px;margin-top:3px">+${arr.length-6} more — refine your search</div>`;
+    html += `</div>`;
+  }
+  out.innerHTML = html;
+}
+async function loadNoticesBadge(){
+  // show unread notice count on the Notices button (last 24h)
+  try{
+    const r = await fetch('/api/control?action=notices',{headers:{'x-panel-token':TOKEN},cache:'no-store'});
+    if(!r.ok) return;
+    const d = await r.json();
+    const all = d.notices||[];
+    const cutoff = Date.now() - 24*3600*1000;
+    const recent = all.filter(n=>new Date(n.posted_at).getTime() > cutoff).length;
+    const btn = $('noticesLink');
+    if(btn && recent > 0) btn.textContent = `📋 Notices (${recent})`;
+  }catch(e){}
+}
+async function loadOps(){
+  try{
+    const r = await fetch('/api/control?action=data&file='+feedFile('dashboard'), {headers:{'x-panel-token':TOKEN},cache:'no-store'});
+    if(!r.ok) throw 0;
+    const d = await r.json(); const h = d.headline||{};
+    const tiles = [];                  // headline tiles gated by config.modules
+    if(MOD('claims') && emailOK())       tiles.push(['Claims', `${h.claims_processed||0} · ${h.claims_approval_pct||0}% ✓`]);
+    if(MOD('procurement') && emailOK())  tiles.push(['Procurement', `${h.procurement_threads||0} · ${esc(h.procurement_latest||'—')}`]);
+    if(MOD('stock_balance')||MOD('inventory')) tiles.push(['Stock', `${h.stock_materials||0} mat · ${h.low_stock_items||0} low`]);
+    if(MOD('production_mtd') && h.mtd_produced) tiles.push(['This month', `${(h.mtd_produced||0).toLocaleString()} · ${h.mtd_attainment_pct||0}% of plan`]);
+    if(MOD('production_fg')||MOD('production_mtd')) tiles.push(['Tyres (YTD)', h.tyres_produced ? `${Math.round(h.tyres_produced/1000)}k · A ${esc(h.grade_a_pct)}%` : `${h.production_reports||0} reports`]);
+    if(MOD('distribution')) tiles.push(['Dealers', `${h.dealers||0}${h.top_region?(' · '+esc(h.top_region)):''}`]);
+    if(MOD('data_sources')) tiles.push(['Sources', `${h.sources_live||0}/${h.sources_tracked||0} live`]);
+    $('opsTiles').innerHTML = tiles.map(([k,v])=>`<div class="tile"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+    if($('opsAsOf')) $('opsAsOf').textContent = h.mtd_as_of ? ('through '+h.mtd_as_of) : '';
+    const al = d.alerts||[];
+    $('opsAlerts').innerHTML = al.map(a=>`<div class="tile" style="margin-top:8px;border-color:var(--warn)"><div class="v" style="font-weight:500;font-size:12.5px">⚠️ ${esc(a)}</div></div>`).join('');
+    // entryLink stays pointed at /entry.html (data capture); ops.html is reachable via opsLink.
+  }catch(e){
+    $('opsTiles').innerHTML = '<div class="tile" style="grid-column:1/-1"><div class="v muted" style="font-weight:500;font-size:12px">No dashboard yet — run <code>node refresh.mjs</code>.</div></div>';
+  }
+}
+function lock(){
+  localStorage.removeItem(LS_KEY); TOKEN=''; clearInterval(pollTimer);
+  $('app').classList.add('hide'); $('gate').classList.remove('hide'); $('token').value='';
+  $('gateMsg').textContent='';
+}
+$('lock').onclick = lock;
+$('refresh').onclick = ()=>refreshStatus(true);
+
+// ---------- status ----------
+function pill(v, good, bad){
+  const ok = good(v);
+  const cls = ok===true?'ok':ok===false?'bad':'warn';
+  return `<span class="pill ${cls}">${v}</span>`;
+}
+function tile(k, vHtml){ return `<div class="tile"><div class="k">${k}</div><div class="v">${vHtml}</div></div>`; }
+
+function renderStatus(d){
+  const h = (d && d.health) || {};
+  const live = (d && d.ok) && h.reachable;
+  const dotCls = 'dot ' + (live ? (h.status==='ready'?'ok':'warn') : 'bad');
+  if($('liveBase')) $('liveBase').textContent = 'backend: ' + ((d && d.live_base || '').replace(/^https?:\/\//,'') || 'unreachable');
+  $('dot').className = dotCls;
+  if($('hdrDot')) $('hdrDot').className = dotCls;                       // mirror health to the header dot
+  if($('sysSummary')) $('sysSummary').textContent = '— ' + (live ? ('live · '+(h.status||'ready')+' · '+(h.coverage_score||0)+'% data') : 'backend unreachable');
+  $('bigStatus').textContent = live ? ('Live · '+(h.status||'ready')) : 'Unreachable';
+  $('when').textContent = d && d.checked_at ? new Date(d.checked_at).toLocaleTimeString() : '';
+
+  const tiles = [];
+  if(live){
+    tiles.push(tile('Database', `<span class="pill ${h.db_ready?'ok':'bad'}">${h.db_ready?'ready':'blocked'}</span><span class="muted">${h.db_mode||''}</span>`));
+    tiles.push(tile('YTF backend', `<span class="pill ${h.backend_ready?'ok':'warn'}">${h.backend_ready?'ready':h.backend_mode||'n/a'}</span>`));
+    tiles.push(tile('Intake', `<span class="pill ${h.intake_status==='ready'||h.intake_status==='empty'?'ok':'warn'}">${h.intake_status||'?'}</span>`));
+    tiles.push(tile('Autopilot', `<span class="pill mut">${h.autopilot||'?'}</span>`));
+  } else {
+    tiles.push(`<div class="tile" style="grid-column:1/-1"><div class="k">Detail</div><div class="v" style="font-weight:500;font-size:12.5px">${(d&&d.detail)||'Could not reach live app. Check LIVE_APP_BASE / protection bypass.'}</div></div>`);
+  }
+  $('tiles').innerHTML = tiles.join('');
+
+  if(live){
+    const cov = Math.max(0, Math.min(100, Number(h.coverage_score||0)));
+    $('coverageBar').style.width = cov + '%';
+    $('coverageBar').style.opacity = '1';
+    $('coverageLabel').textContent = 'Data coverage · ' + cov + '%';
+  } else {
+    $('coverageBar').style.width = '0%';
+    $('coverageBar').style.opacity = '.25';
+    $('coverageLabel').textContent = 'Data coverage · — (backend unreachable)';
+  }
+  $('log').textContent = JSON.stringify(d, null, 2);
+}
+
+async function refreshStatus(manual){
+  if(manual){ $('refresh').textContent='⟳'; $('refresh').firstChild && ($('refresh').className='iconbtn'); }
+  const icon = $('refresh'); icon.innerHTML = '<span class="spin">⟳</span>';
+  try{
+    const { status, data } = await api('status');
+    if(!TOKEN) return;               // user locked while this poll was in flight — drop the stale response
+    if(status===401){ lock(); toast('Session expired','bad'); return; }
+    renderStatus(data);
+    if(manual) toast('Refreshed','ok');
+  }catch(e){ toast('Network error','bad'); }
+  finally{ icon.innerHTML='⟳'; }
+}
+function startPolling(){ refreshStatus(false); clearInterval(pollTimer); pollTimer=setInterval(()=>refreshStatus(false), 30000); }
+
+// ---------- jobs ----------
+async function loadJobs(){
+  const { data } = await api('jobs');
+  const jobs = (data && data.jobs) || [];
+  const groups = { pipeline:[], insight:[], agents:[], other:[] };
+  jobs.forEach(j => (groups[j.group]||groups.other).push(j));
+  $('jobsPipeline').innerHTML = groups.pipeline.map(jobCard).join('');
+  $('jobsOther').innerHTML = [...groups.insight, ...groups.agents, ...groups.other].map(jobCard).join('');
+  document.querySelectorAll('.job').forEach(el => el.onclick = ()=>runJob(el.dataset.job, el));
+}
+function jobCard(j){
+  return `<button class="job ${j.primary?'primary':''}" data-job="${j.name}">
+    <div class="jl">${j.label}</div><div class="jg">${j.group}</div>
+    <div class="run"></div></button>`;
+}
+async function runJob(job, el){
+  if(!confirm('Run "'+job+'" on the live pipeline now?')) return;
+  el.classList.remove('done','err'); el.classList.add('busy');
+  const run = el.querySelector('.run'); run.innerHTML='<span class="spin">⟳</span>';
+  toast('Running '+job+'…');
+  try{
+    const { status, data } = await api('run', { method:'POST', qs:'&job='+encodeURIComponent(job) });
+    if(status===401){ lock(); return; }
+    $('log').textContent = JSON.stringify(data, null, 2);
+    const good = data && data.ok;
+    el.classList.toggle('done', !!good); el.classList.toggle('err', !good);
+    run.textContent = good ? '✓ '+(Math.round((data.took_ms||0)/100)/10)+'s' : '✕ '+(data.http_status||'err');
+    toast(good ? job+' done ('+(data.http_status)+')' : job+' failed ('+(data.http_status||'?')+')', good?'ok':'bad');
+    // NOTE: jobs run on the LIVE backend; the panel's own tiles/search read the per-deploy bundled feed/
+    // and only change after `node refresh.mjs` + redeploy — so we do NOT fake a local refresh here.
+    setTimeout(()=>refreshStatus(false), 1200);   // live health (status) can change, so re-poll that
+  }catch(e){
+    el.classList.add('err'); run.textContent='✕'; toast('Run error','bad');
+  }finally{ el.classList.remove('busy'); }
+}
+
+// ---------- boot ----------
+if(TOKEN){ tryUnlock(TOKEN).then(ok=>{ if(!ok) lock(); }); }
+if('serviceWorker' in navigator){
+  let swReloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{ if(swReloaded) return; swReloaded = true; location.reload(); });
+  navigator.serviceWorker.register('/sw.js').then((reg)=>{
+    reg.update && reg.update();                                   // check for a new SW on load
+    window.addEventListener('focus', ()=>{ try{ reg.update(); }catch(_){} });  // and on refocus
+  }).catch((e)=>{ console.warn('SW register failed', e); });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "_comment": "Connectors hub — the single registry of every data source feeding the cockpit, per tenant. Each generator/puller reads this instead of hardcoding sources. Adding a source = an entry here (+ an adapter if a new type). Types: drive (xlsx/sheet via service account), gmail (threads via connector/build-threads), viber (computer-use bridge, planned), galaxy (iStock SQL/export, planned).",
+  "tenant": "ytf",
+  "connectors": [
+    {
+      "id": "monthly-production", "type": "drive", "status": "live",
+      "fileId": "1Oprx19I-OXe0Lh14LAXHfQoj4mU84mxv", "cache": "Monthly Tyre Production 2026.xlsx",
+      "owner": "yangontyrefactory.bilin@gmail.com", "consumed_by": "production.mjs, production-mc.mjs"
+    },
+    {
+      "id": "monthly-stock", "type": "drive", "status": "live",
+      "fileId": "1iLtVwHkvzL7K4Cr4u4uL4nJki9ou22TV", "cache": "Monthly Stock Balance 2026.xlsx",
+      "owner": "yangontyrefactory.bilin@gmail.com", "consumed_by": "stock-balance.mjs"
+    },
+    {
+      "id": "raw-stock-detail", "type": "drive", "status": "live",
+      "fileId": "1M6mciqlCB-CeyuGuicj9AGhMc61KiwAA", "cache": "Raw Stock Detail June 2026.xlsx",
+      "owner": "ytpdoffice01@gmail.com", "consumed_by": "stock-balance.mjs (alt)"
+    },
+    {
+      "id": "daily-production", "type": "drive", "status": "live",
+      "fileId": "1nNsxMnZychBmtRtFtEZhkxzj7044o5Y3", "cache": "Tyre Production Daily Report 2026.xlsx",
+      "owner": "yangontyrefactory.bilin@gmail.com", "consumed_by": "daily-production.mjs"
+    },
+    {
+      "id": "finance-pl", "type": "drive", "status": "unshared",
+      "fileId": "1G-LZjF8sg3qSwonZevnaLo_fustdjrI0", "cache": "2025 H1 Profit & Loss.xlsx",
+      "owner": "swannyhtet@gmail.com", "consumed_by": "finance.mjs",
+      "note": "in personal Drive, not the shared folder — 404s for the service account; cached copy used"
+    },
+    {
+      "id": "gmail-ops", "type": "gmail", "status": "live",
+      "query": "after:2026/01/01 -in:draft -category:promotions -category:social",
+      "pull": "Gmail connector search_threads -> data/raw/page*.json -> build-threads.mjs -> threads.live.json",
+      "consumed_by": "extract.mjs (claims, procurement/TFT, raw-material, contacts)"
+    },
+    {
+      "id": "viber-groups", "type": "viber", "status": "scaffolded",
+      "access": "all roles, scoped by group (PANEL_USERS groups); NOT CEO-only like email",
+      "pull": "viber-pull.mjs — Viber Desktop DB found but SQLCipher-ENCRYPTED; practical path = computer-use bridge -> OCR/LLM extractor -> data/manual-entries/viber-<group>.json",
+      "consumed_by": "manual-entries.mjs -> feed.captures (group-tagged); redactForRole scopes by group",
+      "note": "see VIBER-INTEGRATION.md §DECISION; needs a computer-use grant for Viber Desktop"
+    },
+    {
+      "id": "galaxy-istock", "type": "galaxy", "status": "planned",
+      "pull": "Galaxy iStock SQL export / xlsx -> galaxy-istock.mjs adapter",
+      "consumed_by": "galaxy-istock.mjs", "note": "showroom sales orders + dealer credit; per-site"
+    }
+  ]
+}

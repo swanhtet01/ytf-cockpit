@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0755a5" />
+<link rel="icon" href="/ytf-mark.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:wght@400..700&display=swap" rel="stylesheet" />
+<title>Operations — Structured Data</title>
+<style>
+  :root{
+    /* Yangon Tyre — default light theme: YTF blue + red on white */
+    --bg:#F4F6F9; --panel:#FFFFFF; --panel2:#EEF2F7; --line:rgba(7,85,165,0.14);
+    --txt:#11233A; --muted:#566576; --accent:#0755a5; --accent2:#ec1c2e;
+    --ok:#16823F; --warn:#B25A0C; --bad:#ec1c2e; --chip:#EAF0F7;
+    --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0B1622; --panel:#122236; --panel2:#0E1C2C; --line:rgba(220,235,255,0.10);
+    --txt:#EAF1F9; --muted:#90A2B6; --accent:#3F90E0; --accent2:#FF5A6A;
+    --ok:#5BA46F; --warn:#E8A23D; --bad:#FF5A6A; --chip:#122236;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header h1{font-family:var(--serif);font-weight:560;letter-spacing:-.02em}
+  body{padding:max(14px,env(safe-area-inset-top)) 14px calc(40px + env(safe-area-inset-bottom))}
+  .wrap{max-width:680px;margin:0 auto}
+  header{display:flex;align-items:center;gap:10px;margin:4px 0 14px}
+  header a.back{text-decoration:none;color:var(--accent);font-size:13px;background:var(--chip);
+    border:1px solid var(--line);padding:8px 11px;border-radius:10px}
+  header h1{font-size:17px;margin:0;font-weight:700}
+  header .sub{font-size:11px;color:var(--muted);margin-top:1px}
+  .spacer{flex:1}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  @media (max-width:520px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  /* desktop: use the width — wider column + denser tile grid */
+  @media (min-width:900px){ .wrap{max-width:1040px} .grid{grid-template-columns:repeat(4,1fr)} .scroll{max-height:60vh} }
+  .tile{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:11px;min-width:0}
+  .tile .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .tile .v{font-size:18px;font-weight:750;margin-top:4px;overflow-wrap:anywhere}
+  .tile .s{font-size:11px;color:var(--muted);margin-top:2px}
+  .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:20px 4px 8px;
+    display:flex;align-items:center;gap:8px}
+  .section-title .count{background:var(--chip);color:var(--txt);border-radius:99px;padding:1px 8px;font-size:11px;font-weight:700}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;color:var(--muted);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;
+    padding:8px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+  td{padding:8px 8px;border-bottom:1px solid var(--panel2);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  .scroll{max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:12px}
+  .pill{font-size:10px;padding:2px 7px;border-radius:999px;font-weight:700;white-space:nowrap}
+  .pill.ok{background:color-mix(in srgb,var(--ok) 14%,var(--panel));color:var(--ok)}
+  .pill.bad{background:color-mix(in srgb,var(--bad) 14%,var(--panel));color:var(--bad)}
+  .pill.warn{background:color-mix(in srgb,var(--warn) 16%,var(--panel));color:var(--warn)}
+  .pill.mut{background:var(--chip);color:var(--muted)}
+  .alert{background:var(--panel2);border:1px solid var(--warn);border-radius:11px;padding:10px 12px;margin-top:8px;font-size:12.5px}
+  .muted{color:var(--muted)}
+  .bar{height:8px;border-radius:99px;background:var(--chip);overflow:hidden;margin-top:8px;display:flex}
+  .bar>span{display:block;height:100%}
+  .bar .a{background:var(--ok)} .bar .p{background:var(--warn)} .bar .r{background:var(--bad)}
+  .nowrap{white-space:nowrap}
+  code{background:var(--panel2);padding:1px 5px;border-radius:5px;font-size:11px}
+  .empty{color:var(--muted);font-size:13px;padding:24px;text-align:center}
+  .lzbtn{margin:8px 0 0;background:var(--chip);border:1px solid var(--line);color:var(--accent);
+    padding:9px 14px;border-radius:10px;font-size:12.5px;font-family:inherit;cursor:pointer;width:100%}
+  .lzbtn{min-height:44px}
+  .lzbtn:active{transform:scale(.99)} .lzbtn[disabled]{opacity:.6}
+  header a.back{min-width:44px;min-height:44px;display:inline-grid;place-items:center}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms!important;transition-duration:.001ms!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="/index.html" aria-label="Back to control panel">←</a>
+    <img id="opsLogo" src="/ytf-mark.svg" alt="Yangon Tyre" style="width:34px;height:34px;flex:0 0 auto" />
+    <div>
+      <h1 id="opsBrand">Operations — Structured Data</h1>
+      <div class="sub" id="sub">loading…</div>
+    </div>
+  </header>
+
+  <input id="filter" aria-label="Filter all tables" placeholder="🔍 filter all tables — size, claim id, material, dealer, TFT…" autocomplete="off"
+    style="width:100%;background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:11px 13px;border-radius:11px;font-size:14px;outline:none;margin-bottom:12px" />
+  <div id="filterStat" role="status" aria-live="polite" aria-atomic="true" class="muted" style="font-size:11px;margin:-6px 2px 10px;min-height:13px"></div>
+  <main id="root"><div class="empty">Loading structured ledgers…</div></main>
+</div>
+
+<script>
+const esc = (s) => String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// only emit http(s) hrefs — blocks javascript:/data: scheme injection from source URLs
+const safeHref = (u) => /^https?:\/\//i.test(String(u||'')) ? String(u) : '';
+// per-section guard: one malformed module degrades to a small error card instead of blanking the whole cockpit
+const secErr = (e) => `<div class="card empty" style="border-color:var(--warn);color:var(--warn)">⚠ a section could not render — ${esc(e&&e.message||e)}</div>`;
+const el = (id) => document.getElementById(id);
+// data is private — fetched through the token-gated /api/control?action=data (token set by the panel gate)
+const TOKEN = localStorage.getItem('sm_remote_token') || '';
+const D = (file) => fetch('/api/control?action=data&file='+file, { headers: { 'x-panel-token': TOKEN }, cache: 'no-store' });
+// white-label config (per-deploy branding + modules + feed namespace) — see public/config.json + TEMPLATE.md
+let CONFIG = {};
+const feedFile = (suffix) => `${(CONFIG.feed_prefix||'ytf')}-${suffix}`;   // must match server FEED_PREFIX env
+const MOD = (name) => !CONFIG.modules || CONFIG.modules[name] !== false;   // section shows unless explicitly false
+const CONFIG_READY = fetch('/config.json',{cache:'no-store'}).then(r=>r.ok?r.json():{}).then(c=>{
+  CONFIG = c||{};
+  if(c.accent){ document.documentElement.style.setProperty('--accent', c.accent); document.documentElement.style.setProperty('--accent2', c.accent2 || c.accent); }
+  if(c.theme === 'dark') document.documentElement.dataset.theme = 'dark'; else document.documentElement.removeAttribute('data-theme');
+  if(c.logo){ const lg = el('opsLogo'); if(lg) lg.src = c.logo; }
+  const brand = c.instance ? `${c.instance} — operations` : (c.brand ? `${c.brand} — operations` : null);
+  if(brand){ const h=el('opsBrand'); if(h) h.textContent = brand; document.title = brand; }
+  return CONFIG;
+}).catch(()=>CONFIG);
+
+// global client-side row filter across every rendered table (works on previews + expanded rows)
+function applyFilter(){
+  const q = (el('filter').value || '').trim().toLowerCase();
+  const rows = document.querySelectorAll('#root table tbody tr');
+  let shown = 0;
+  rows.forEach((tr) => { const hit = !q || tr.textContent.toLowerCase().includes(q); tr.style.display = hit ? '' : 'none'; if (hit) shown++; });
+  const hasCollapsed = !!document.querySelector('.lzbtn');
+  el('filterStat').textContent = q
+    ? `${shown} matching row${shown===1?'':'s'} across loaded tables${hasCollapsed?' · tap "Show all" to search full ledgers':''}`
+    : '';
+}
+document.addEventListener('input', (e) => { if (e.target && e.target.id === 'filter') applyFilter(); });
+
+function claimPill(status){
+  const map = { approved:['ok','A'], rejected:['bad','NA'], partial:['warn','PART'] };
+  const [cls,label] = map[status] || ['mut', status||'?'];
+  return `<span class="pill ${cls}">${esc(label)}</span>`;
+}
+function table(headers, rows){
+  if(!rows.length) return '<div class="empty">none in window</div>';
+  return `<div class="scroll"><table><thead><tr>${headers.map(h=>`<th scope="col">${h[0]}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r=>`<tr>${headers.map(h=>`<td>${h[1](r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+
+// lazy sections: heavy ledgers ship as {count,url,preview}; render preview now, fetch the
+// full file only when the user taps "Show all" — keeps the mobile first-paint payload small.
+const LZ = {};
+// only same-origin token-gated feed URLs may be lazy-fetched with the panel token (no token leak / SSRF-to-browser)
+const safeFeedUrl = (u) => /^\/api\/control\?action=data&file=[a-z0-9-]+$/i.test(String(u||'')) ? String(u) : null;
+function lazySection(key, title, obj, headers, note){
+  if(!obj) return '';
+  LZ[key] = { url: safeFeedUrl(obj.url), headers };
+  const preview = obj.preview || [];
+  const more = (obj.count||0) > preview.length
+    ? `<button class="lzbtn" onclick="loadAll('${key}', this)">Show all ${obj.count} →</button>` : '';
+  const sub = note ? ` <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">${note}</span>` : '';
+  return `<div class="section-title">${title} <span class="count">${obj.count||0}</span>${sub}</div>`
+    + `<div id="lz-${key}">${table(headers, preview)}</div>${more}`;
+}
+async function loadAll(key, btn){
+  const o = LZ[key]; if(!o || !o.url) return;   // url was rejected by safeFeedUrl
+  if(btn){ btn.textContent='loading…'; btn.disabled=true; }
+  try{
+    const resp = await fetch(o.url, {headers:{'x-panel-token':TOKEN}, cache:'no-store'});
+    if(resp.status===401){ location.href='/index.html'; return; }
+    const j = await resp.json();
+    document.getElementById('lz-'+key).innerHTML = table(o.headers, j.rows||[]);
+    if(btn) btn.remove();
+    applyFilter();
+  }catch(e){ if(btn){ btn.textContent='failed — retry'; btn.disabled=false; } }
+}
+window.loadAll = loadAll;
+
+CONFIG_READY.then(()=> TOKEN ? D(feedFile('ops')) : Promise.resolve({ ok:false, status:401 })).then(r=>{
+  if(r.status===401) throw 'auth'; if(!r.ok) throw 0; return r.json();
+}).then(d=>{
+  let html = '';
+  try {
+  const s = d.summary||{}; const cs = (s.claims&&s.claims.by_status)||{};
+  const total = (s.claims&&s.claims.total)||0;
+  const a = cs.approved||0, p = cs.partial||0, rj = cs.rejected||0;
+  // source attribution: link a section to its Drive source file (matched against the sources catalog)
+  const SRC = d.drive_sources || [];
+  const ao = d.as_of || {};
+  const genTs = Date.parse(d.generated_at);
+  const genStr = isNaN(genTs) ? 'unknown' : new Date(genTs).toLocaleDateString();
+  const stale = !isNaN(genTs) && (Date.parse(d.generated_at) < (Date.now() - 21*864e5)); // >3 weeks old
+  const latestSrc = SRC.reduce((best, row) => {
+    const t = Date.parse(row && row.modified);
+    return !isNaN(t) && (!best.time || t > best.time) ? { time: t, label: row.modified } : best;
+  }, { time: 0, label: '' });
+  const currentProduction = ao.production_mtd || ao.production_stock || '?';
+  const currentStock = ao.production_stock || 'needs close';
+  const sourceFreshness = latestSrc.label || ao.gmail || '?';
+  el('sub').innerHTML = `current ops - <b>production ${esc(currentProduction)}</b> · stock ${esc(currentStock)} · source ${esc(sourceFreshness)} · generated ${genStr}${stale?' <span class="pill bad" style="font-size:9px">STALE</span>':''}`;
+  const srcTag = (file) => {
+    if(!file) return '';
+    const m = SRC.find(x=> x.name && (x.name===file || file.includes(x.name) || x.name.includes(file.replace(/\.xlsx$/i,''))));
+    const label = esc(file);
+    const href = m && safeHref(m.url);
+    return ` <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· src: ${href?`<a href="${esc(href)}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">${label} ↗</a>`:label}${m&&m.owner?` (${esc(m.owner)})`:''}</span>`;
+  };
+
+  const mtd = (d.daily_production && d.daily_production.mtd) || {};
+  const stockTotals = (d.stock_balance && d.stock_balance.totals) || {};
+  // email-derived tiles (procurement/raw-material/claims) only appear when the role is allowed to see them
+  // (the server strips that data for non-CEO roles, so presence == permission).
+  const headlineTiles = [
+    ['MTD production', mtd.produced ? mtd.produced.toLocaleString() : 'Needs entry', d.daily_production && d.daily_production.as_of ? `as of ${d.daily_production.as_of}` : 'daily report'],
+    ['Stock items', stockTotals.materials || 0, `${stockTotals.low_or_out || 0} low/out`],
+    ...(d.procurement ? [['Procurement', d.procurement.count||0, (d.procurement.preview&&d.procurement.preview[0])?('latest TFT '+(d.procurement.preview[0].tft_ref||'')):'']] : []),
+    ...(d.raw_material ? [['Raw materials', d.raw_material.count||0, 'shipments and stock risk']] : []),
+    ...(s.claims ? [['Warranty claims', total, `${(s.claims.approval_rate_pct)||0}% approved`]] : []),
+    ['Production reports', (d.production||[]).length, 'current window'],
+  ];
+
+  html += `<div class="card">
+    <div class="grid">${headlineTiles.map(t=>`<div class="tile"><div class="k">${t[0]}</div><div class="v">${t[1]}</div><div class="s">${esc(t[2])}</div></div>`).join('')}</div>
+    ${total>0?`<div class="bar" title="approved / partial / rejected">
+      <span class="a" style="width:${100*a/total}%"></span>
+      <span class="p" style="width:${100*p/total}%"></span>
+      <span class="r" style="width:${100*rj/total}%"></span>
+    </div>
+    <div class="s muted" style="margin-top:6px;font-size:11px">Claims: ${a} approved · ${p} partial · ${rj} rejected</div>`:''}
+    ${(d.alerts||[]).map(x=>`<div class="alert">⚠️ ${esc(x)}</div>`).join('')}
+  </div>`;
+
+  // intelligence — cross-module derived signals (days-to-stockout, projections, trends), severity-ranked
+  const IQ = d.insights;
+  if (MOD('intelligence') && IQ && IQ.signals && IQ.signals.length) {
+    const sevColor = { critical:'var(--bad)', high:'var(--warn)', watch:'var(--accent)', ok:'var(--ok)' };
+    const c = IQ.counts || {};
+    html += `<div class="section-title">Intelligence <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· ${c.critical||0} critical · ${c.high||0} high · cross-module signals</span></div>`;
+    html += `<div class="card">${IQ.signals.map(s=>`<div style="display:flex;gap:9px;padding:9px 0;border-bottom:1px solid var(--panel2)">
+      <span style="color:${sevColor[s.severity]||'var(--muted)'};font-size:15px;line-height:1.2">●</span>
+      <div><div style="font-weight:650;font-size:13px">${esc(s.title)}</div>
+      <div class="muted" style="font-size:11.5px;margin-top:2px">${esc(s.detail||'')}</div>${s.recommendation?`<div style="font-size:11.5px;margin-top:4px;color:var(--accent)">→ ${esc(s.recommendation)}</div>`:''}</div></div>`).join('')}</div>`;
+  }
+
+  // trends — movement over time (momentum + month-over-month)
+  const TR = d.trends;
+  if (MOD('trends') && TR && (TR.production_momentum || TR.sales_mom)) {
+    const pm = TR.production_momentum, sm = TR.sales_mom;
+    const dirCol = (v) => v == null ? 'var(--muted)' : v > 1 ? 'var(--ok)' : v < -1 ? 'var(--bad)' : 'var(--muted)';
+    const pctTxt = (v) => v == null ? 'n/a' : (v >= 0 ? '+' : '') + v + '%';   // never render "+null%"
+    html += `<div class="section-title">Trends <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· momentum & month-over-month</span></div>`;
+    const trTiles = [];
+    if (pm) trTiles.push(['Production momentum', `<span style="color:${dirCol(pm.change_pct)}">${esc(pm.direction)} ${pctTxt(pm.change_pct)}</span>`, `${(pm.recent_avg_per_day||0).toLocaleString()}/day recent`]);
+    if (sm) trTiles.push(['Sales MoM', `<span style="color:${dirCol(sm.change_pct)}">${esc(sm.direction)} ${pctTxt(sm.change_pct)}</span>`, esc(sm.note)]);
+    if (sm && sm.best_month) trTiles.push(['Best month', ((sm.best_month.total||0)/1e9).toFixed(1)+'B', esc(sm.best_month.month)]);
+    trTiles.push(['Snapshots', TR.snapshots||1, (TR.vs_previous&&TR.vs_previous.since)?('Δ since '+TR.vs_previous.since):'baseline today']);
+    html += `<div class="card"><div class="grid">${trTiles.map(x=>`<div class="tile"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${esc(x[2])}</div></div>`).join('')}</div>`;
+    // sales MoM mini bar chart
+    if (sm && sm.series && sm.series.length) {
+      const mx = Math.max(...sm.series.map(s=>s.total))||1;
+      html += `<div style="display:flex;align-items:flex-end;gap:6px;height:64px;margin-top:12px">${sm.series.map(s=>`<div style="flex:1;text-align:center"><div style="background:var(--accent);border-radius:3px 3px 0 0;height:${Math.round(56*(s.total||0)/mx)}px" title="${((s.total||0)/1e9).toFixed(2)}B"></div><div class="muted" style="font-size:9px;margin-top:3px">${esc(String(s.month).replace(/[;'].*/,'').slice(0,3))}</div></div>`).join('')}</div>`;
+    }
+    html += `</div>`;
+  }
+
+  // sites — Factory A/B, Showroom, Head Office (Galaxy iStock per-site → HO consolidation)
+  const ST = d.sites;
+  if (MOD('sites') && ST && ST.sites && ST.sites.length) {
+    const kindIcon = { factory:'🏭', sales:'🏬', ho:'🏢' };
+    html += `<div class="section-title">Sites <span class="count">${ST.sites.length}</span> <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· Galaxy iStock per-site → HO consolidation</span></div>`;
+    html += `<div class="card">${ST.sites.map(s=>`<div style="padding:9px 0;border-bottom:1px solid var(--panel2)">
+      <div style="font-weight:650;font-size:13px">${kindIcon[s.kind]||'📍'} ${esc(s.name)} <span class="muted" style="font-weight:400">· ${s.source_count} feeds</span></div>
+      <div class="muted" style="font-size:11.5px;margin-top:2px">${esc((s.produces||[]).join(' · '))}</div>
+      <div class="muted" style="font-size:11px;margin-top:2px">📦 ${esc(s.galaxy||'')}</div></div>`).join('')}</div>`;
+  }
+
+  // quality & WCM (ISO 9001 / IATF 16949) — manufacturing scorecard
+  const Q = d.quality;
+  if (MOD('quality_wcm') && Q && Q.wcm_scorecard) {
+    const stPill = (s)=>({ok:'ok',watch:'warn',gap:'bad'}[s]||'mut');
+    const fq = Q.field_quality||{}, oee = Q.oee||{};
+    const qTiles = [
+      (oee.oee_full!=null
+        ? ['OEE (A×P×Q)', oee.oee_full+'%', `avail ${oee.availability}% · ${(oee.downtime&&oee.downtime.logs)||0} downtime logs`]
+        : ['OEE (P×Q)', (oee.oee_partial!=null?oee.oee_partial+'%':'—'), 'log downtime → full OEE']),
+      ['First-pass yield', (oee.quality!=null?oee.quality+'%':'—'), `off-grade ${fq.off_grade_pct!=null?fq.off_grade_pct+'%':'—'}`],
+      ['Warranty (field)', (fq.claim_dppm!=null?fq.claim_dppm.toLocaleString()+' DPPM':'—'), `${fq.warranty_claims||0} claims · ${fq.approval_pct||0}% appr.`],
+      ['Open CAPA/NCR', (Q.capa&&Q.capa.open_ncr)||0, 'rejected/partial → 8D'],
+    ];
+    html += `<div class="section-title">Quality & WCM <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· ${(Q.standards||[]).map(s=>esc(s.split(' ')[0])).join(' · ')} · ${Q.wcm_coverage?Q.wcm_coverage.scored+'/'+Q.wcm_coverage.total+' pillars':''}</span></div>`;
+    html += `<div class="card"><div class="grid">${qTiles.map(x=>`<div class="tile"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${esc(x[2])}</div></div>`).join('')}</div></div>`;
+    html += table([
+      ['Pillar', r=>esc(r.pillar)],
+      ['KPI', r=>esc(r.kpi)],
+      ['Value', r=>esc(String(r.value))],
+      ['', r=>`<span class="pill ${stPill(r.status)}">${esc(r.status)}</span>`],
+      ['ISO/IATF', r=>`<span class="muted nowrap">${esc(r.iso_iatf||'')}</span>`],
+    ], Q.wcm_scorecard);
+  }
+
+  // COPQ — Cost of Poor Quality (always shown; no email data)
+  const CQ = d.copq;
+  if (CQ && CQ.total_copq > 0) { try {
+    const fmtM = (n) => n==null?'—':(n/1e6).toFixed(1)+'M';
+    const copqBenchColor = {'world_class':'ok','typical_industry':'warn','above_average_cost':'bad'}[CQ.benchmark]||'mut';
+    const copqTiles = [
+      ['Total COPQ', fmtM(CQ.total_copq), CQ.copq_pct_revenue!=null?CQ.copq_pct_revenue+'% of revenue':''],
+      ['Scrap / reject', fmtM(CQ.components?.scrap?.cost), `${(CQ.components?.scrap?.total_reject_qty||0).toLocaleString()} reject tyres`],
+      ['Downgrade (B-grade)', fmtM(CQ.components?.downgrade?.cost), `${(CQ.components?.downgrade?.total_grade_b||0).toLocaleString()} B-grade × 15% disc.`],
+      ['Claims', fmtM(CQ.components?.claims?.cost), `${CQ.components?.claims?.approved_claims||0} approved claims`],
+    ];
+    if (CQ.components?.downtime?.downtime_minutes > 0) {
+      copqTiles.push(['Downtime loss', fmtM(CQ.components?.downtime?.cost), `${CQ.components?.downtime?.downtime_minutes} min logged`]);
+    }
+    html += `<div class="section-title">Cost of Poor Quality <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· ${esc(CQ.period)} · <span class="pill ${copqBenchColor}">${esc((CQ.benchmark||'').replace(/_/g,' '))}</span></span></div>`;
+    html += `<div class="card"><div class="grid">${copqTiles.map(x=>`<div class="tile"><div class="k">${esc(x[0])}</div><div class="v">${esc(x[1])}</div><div class="s">${esc(x[2])}</div></div>`).join('')}</div>`;
+    if (CQ.copq_per_unit_kyat) html += `<div class="muted" style="font-size:12px;margin-top:10px">${CQ.copq_per_unit_kyat.toLocaleString()} MMK / tyre · ${esc(CQ.data_quality||'')} estimate based on ${esc(CQ.unit_economics?.source||'H1 2025 P&L')}</div>`;
+    const actions = (CQ.action_priority||[]).filter(a=>a.potential_saving_millions>0);
+    if (actions.length) {
+      html += `<div class="section-title" style="margin:12px 4px 6px;font-size:11px">Priority savings opportunities</div>`;
+      html += actions.map(a=>`<div class="alert" style="margin-top:6px"><strong style="display:block;font-size:11px;margin-bottom:3px">${esc(a.area.toUpperCase())} · potential ${a.potential_saving_millions}M MMK</strong>${esc(a.action)}</div>`).join('');
+    }
+    html += `</div>`;
+  } catch(e){ html += secErr(e); } }
+
+  // financials (P&L / sales / cash) — the money side
+  const FIN = d.finance;
+  const freshFinancialPeriod = FIN && /(?:^|[^0-9])2026(?:[^0-9]|$)/.test(String(FIN.as_of || FIN.period || ''));
+  if (MOD('financials') && freshFinancialPeriod && FIN && FIN.pl && FIN.pl.revenue) {
+    const f = FIN.pl, B = (n)=> n==null?'—':(n/1e9).toFixed(1)+'B';
+    const finTiles = [
+      ['Revenue', B(f.revenue), esc(FIN.period)],
+      ['Gross profit', B(f.gross_profit), (f.gross_margin_pct||0)+'% margin'],
+      ['Net profit', B(f.net_profit), (f.net_margin_pct||0)+'% margin'],
+      ['Cash & bank', B(FIN.cash&&FIN.cash.balance), 'on hand'],
+    ];
+    const recon = !FIN.checks ? `<span class="pill mut">unchecked</span>`
+      : FIN.checks.gross_reconciles ? `reconciled ✓`
+      : `<span class="pill bad">NOT reconciled</span>`;
+    html += `<div class="section-title">Financials <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· ${esc(FIN.period)} · ${recon}</span>${srcTag(FIN.source)}</div>`;
+    html += `<div class="card"><div class="grid">${finTiles.map(x=>`<div class="tile"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${esc(x[2])}</div></div>`).join('')}</div></div>`;
+    const sm = (FIN.sales&&FIN.sales.by_month)||[];
+    if (sm.length) {
+      html += `<div class="section-title">Sales by month <span class="count">${sm.length}</span></div>`;
+      html += table([
+        ['Month', r=>esc(r.month)],
+        ['Nylon', r=>((r.nylon||0)/1e9).toFixed(2)+'B'],
+        ['Radial', r=>((r.radial||0)/1e9).toFixed(2)+'B'],
+        ['MC', r=>((r.mc||0)/1e9).toFixed(2)+'B'],
+        ['Total', r=>`<span class="nowrap">${((r.total||0)/1e9).toFixed(2)}B</span>`],
+      ], sm);
+    }
+  }
+
+  // production — current month-to-date (daily report) — the freshest output signal
+  const DP = d.daily_production;
+  if (MOD('production_mtd') && DP && DP.mtd && DP.mtd.produced) {
+    const m = DP.mtd;
+    const dpTiles = [
+      ['MTD output', (m.produced||0).toLocaleString(), `through ${esc(DP.as_of||'')}`],
+      ['Target', (m.target||0).toLocaleString(), (m.attainment_pct||0)+'% attainment'],
+      ['Avg/day', (m.avg_per_day||0).toLocaleString(), `${DP.days_reported} days`],
+      ['Grade A', (m.grade_a_pct||0)+'%', `off-grade ${m.off_grade_pct||0}%`],
+    ];
+    html += `<div class="section-title">Production — ${esc(DP.month)} MTD (daily) <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· live, vs monthly close</span>${srcTag(DP.source)}</div>`;
+    html += `<div class="card"><div class="grid">${dpTiles.map(x=>`<div class="tile"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${esc(x[2])}</div></div>`).join('')}</div></div>`;
+    html += table([
+      ['Day', r=>`<span class="nowrap">${esc(r.date)}</span>`],
+      ['Produced', r=>(r.produced||0).toLocaleString()],
+      ['Target', r=>`<span class="muted">${(r.target||0).toLocaleString()}</span>`],
+      ['vs target', r=>{const p=r.target?Math.round(100*r.produced/r.target):0;return `<span class="pill ${p>=100?'ok':p>=90?'warn':'bad'}">${p}%</span>`;}],
+    ], (DP.by_day||[]).slice().reverse());
+  }
+
+  // inventory / raw materials (auto-derived from supplier emails) — the ERP-style core
+  const INV = d.inventory;
+  if (MOD('inventory') && INV && INV.materials) {
+    const statePill = (s) => ({ ok:'ok', in_transit:'warn', reorder:'bad' }[s] || 'mut');
+    const stateLabel = (s) => ({ ok:'OK', in_transit:'in transit', reorder:'REORDER' }[s] || s);
+    const it = INV.totals || {};
+    const invTiles = [
+      ['Materials', (INV.materials||[]).length, 'tracked'],
+      ['In transit', (it.in_transit_shipments||0), `${it.in_transit_mt||0} mt inbound`],
+      ['Reorder flags', (it.reorder_flags||0), it.reorder_flags?'needs action':'all covered'],
+      ['As of', INV.as_of||'', 'auto-fed'],
+    ];
+    html += `<div class="section-title">Inventory — raw materials <span class="count">${(INV.materials||[]).length}</span> <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· no data entry, read from supplier email</span></div>`;
+    html += `<div class="card"><div class="grid">${invTiles.map(x=>`<div class="tile"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${esc(x[2])}</div></div>`).join('')}</div></div>`;
+    html += table([
+      ['Material', r=>esc(r.name)],
+      ['Status', r=>`<span class="pill ${statePill(r.status)}">${esc(stateLabel(r.status))}</span>`],
+      ['In transit', r=>r.in_transit_mt?`${r.in_transit_mt} mt`:(r.in_transit_count?`${r.in_transit_count} ship.`:'—')],
+      ['Next ETA', r=>`<span class="nowrap">${esc(r.next_eta||'—')}</span>`],
+      ['Last in', r=>`<span class="nowrap muted">${r.days_since_last==null?'—':r.days_since_last+'d ago'}</span>`],
+    ], INV.materials||[]);
+    if ((INV.in_transit||[]).length) {
+      html += `<div class="section-title">Goods in transit <span class="count">${INV.in_transit.length}</span></div>`;
+      html += table([
+        ['Date', r=>`<span class="nowrap">${esc(r.date)}</span>`],
+        ['Material', r=>esc(r.material)],
+        ['Qty', r=>r.qty_mt?`${r.qty_mt} mt`:'—'],
+        ['ETA', r=>`<span class="nowrap">${esc(r.eta||'—')}</span>`],
+        ['Ref', r=>`<span class="muted">${esc(r.ref||'')}</span>`],
+      ], INV.in_transit);
+    }
+  }
+
+  // raw-material stock on hand (from the Monthly Stock Balance workbook) — months of cover
+  const SB = d.stock_balance;
+  if (MOD('stock_balance') && SB && SB.materials) {
+    const coverPill = (s) => ({ ok:'ok', low:'warn', out:'bad' }[s] || 'mut');
+    const T = SB.totals || {};
+    const g = T.closing_by_group_kg || {};
+    const sbTiles = [
+      ['Materials', T.materials||0, `${T.low_or_out||0} low/out`],
+      ['Rubber', (g.rubber||0).toLocaleString(), 'Kg on hand'],
+      ['Carbon black', (g['carbon black']||0).toLocaleString(), 'Kg on hand'],
+      ['Chemicals', (g.chemicals||0).toLocaleString(), 'Kg on hand'],
+    ];
+    html += `<div class="section-title">Raw-material stock — on hand <span class="count">${T.materials||0}</span> <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· ${esc(SB.period||'')}</span>${srcTag(SB.source)}</div>`;
+    html += `<div class="card"><div class="grid">${sbTiles.map(x=>`<div class="tile"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${esc(x[2])}</div></div>`).join('')}</div></div>`;
+    if ((SB.low_cover||[]).length) {
+      html += `<div class="section-title">Low / out of stock <span class="count">${SB.low_cover.length}</span></div>`;
+      html += table([
+        ['Material', r=>esc((r.material||'').trim())],
+        ['On hand', r=>`${(r.closing||0).toLocaleString()} ${esc(r.unit)}`],
+        ['Cover', r=>r.months_cover==null?'<span class="muted">—</span>':`${r.months_cover} mo`],
+        ['Uses/mo', r=>`<span class="muted">${(r.monthly_consumption||0).toLocaleString()}</span>`],
+        ['', r=>`<span class="pill ${coverPill(r.status)}">${esc(String(r.status||'').toUpperCase())}</span>`],
+      ], SB.low_cover);
+    }
+    html += `<div class="section-title">All materials — by cover <span class="count">${SB.materials.length}</span></div>`;
+    html += table([
+      ['Material', r=>esc((r.material||'').trim())],
+      ['Group', r=>`<span class="muted">${esc(r.group)}</span>`],
+      ['On hand', r=>`${(r.closing||0).toLocaleString()} ${esc(r.unit)}`],
+      ['Cover', r=>r.months_cover==null?'<span class="muted">—</span>':`<span class="pill ${coverPill(r.status)}">${r.months_cover} mo</span>`],
+    ], SB.materials);
+  }
+
+  // finished-goods production (from the Monthly Tyre Production workbook)
+  const P = d.production_fg;
+  if (MOD('production_fg') && P && P.totals) {
+    const t = P.totals;
+    const pTiles = [
+      ['Produced', (t.produced||0).toLocaleString(), `${t.active_sizes||0} sizes`],
+      ['Grade A', (t.grade_a_pct!=null?t.grade_a_pct:'—') + '%', 'first grade'],
+      ['Off-grade', (t.off_grade_pct!=null?t.off_grade_pct:'—') + '%', `B ${t.grade_b_pct||0}% / R ${t.reject_pct||0}%`],
+      ['Tonnage', (t.total_weight_mt||0) + ' mt', P.product_line],
+    ];
+    html += `<div class="section-title">Finished goods — production <span class="count">${(t.produced||0).toLocaleString()}</span> <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· ${esc(P.product_line)} · ${esc(P.period||'')}</span>${srcTag(P.source)}</div>`;
+    html += `<div class="card"><div class="grid">${pTiles.map(x=>`<div class="tile"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${esc(x[2])}</div></div>`).join('')}</div></div>`;
+    html += `<div class="section-title">Top sizes by volume <span class="count">${(P.top_sizes||[]).length}</span></div>`;
+    html += table([
+      ['Size', r=>esc(r.size)],
+      ['Total', r=>(r.total||0).toLocaleString()],
+      ['A', r=>`<span class="muted">${(r.a||0).toLocaleString()}</span>`],
+      ['B+R', r=>`<span class="muted">${((r.b||0)+(r.r||0)).toLocaleString()}</span>`],
+      ['Weight', r=>r.weight_kg?`${(r.weight_kg/1000).toFixed(1)} mt`:'—'],
+    ], P.top_sizes||[]);
+    if ((P.scrap_pareto||[]).length) {
+      html += `<div class="section-title">Off-grade by size — scrap Pareto <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· where B+R concentrates → fix QC here first</span></div>`;
+      html += table([
+        ['Size', r=>esc(r.size)],
+        ['Off-grade (B+R)', r=>(r.off||0).toLocaleString()],
+        ['of', r=>`<span class="muted">${(r.total||0).toLocaleString()}</span>`],
+        ['Rate', r=>`<span class="pill ${r.off_pct>=3?'bad':r.off_pct>=1.5?'warn':'mut'}">${r.off_pct}%</span>`],
+      ], P.scrap_pareto||[]);
+    }
+  }
+
+  // motorcycle (MC) production — the line the PCR/Radial report omits (same workbook, MC section)
+  const MC = d.production_mc;
+  if (MOD('production_mc') && MC && MC.totals && MC.totals.produced) {
+    const t = MC.totals;
+    const mcTiles = [
+      ['MC produced', (t.produced||0).toLocaleString(), `${t.active_sizes||0} sizes`],
+      ['Grade A', (t.grade_a_pct!=null?t.grade_a_pct:'—') + '%', 'first grade'],
+      ['Off-grade', (t.off_grade_pct!=null?t.off_grade_pct:'—') + '%', `B ${t.grade_b_pct||0}% / R ${t.reject_pct||0}%`],
+      ['Tonnage', (t.total_weight_mt||0) + ' mt', 'motorcycle'],
+    ];
+    html += `<div class="section-title">Motorcycle production <span class="count">${(t.produced||0).toLocaleString()}</span> <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· ${esc(MC.product_line||'MC')} · ${esc(MC.period||'')}</span>${srcTag(MC.source)}</div>`;
+    html += `<div class="card"><div class="grid">${mcTiles.map(x=>`<div class="tile"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${esc(x[2])}</div></div>`).join('')}</div></div>`;
+    html += `<div class="section-title">Top MC sizes <span class="count">${(MC.top_sizes||[]).length}</span></div>`;
+    html += table([
+      ['Size', r=>esc(r.size)],
+      ['Total', r=>(r.total||0).toLocaleString()],
+      ['A', r=>`<span class="muted">${(r.a||0).toLocaleString()}</span>`],
+      ['B+R', r=>`<span class="muted">${((r.b||0)+(r.r||0)).toLocaleString()}</span>`],
+      ['Weight', r=>r.weight_kg?`${(r.weight_kg/1000).toFixed(1)} mt`:'—'],
+    ], MC.top_sizes||[]);
+  }
+
+  // distribution / retailers (from Retailer DB + rebate sheets)
+  const R = d.retailers;
+  if (MOD('distribution') && R && R.totals) {
+    const t = R.totals;
+    const bn = (n) => ((n||0)/1e9).toFixed(2) + 'B';
+    const distTiles = [
+      ['Dealers', t.dealers||0, R.by_region ? R.by_region.length + ' regions' : ''],
+      ['Units (6-mo)', (t.total_qty||0).toLocaleString(), `${t.nylon_share_pct||0}% nylon / ${t.radial_share_pct||0}% radial`],
+      ['Sales', bn(t.total_amount), 'Kyat'],
+      ['Est. rebate', bn(t.est_rebate), 'Kyat'],
+    ];
+    html += `<div class="section-title">Distribution / dealers <span class="count">${t.dealers}</span>${R.sample?' <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· '+esc(R.period||'sample')+' sample</span>':''}${srcTag('Retailer Database')}</div>`;
+    html += `<div class="card"><div class="grid">${distTiles.map(x=>`<div class="tile"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${esc(x[2])}</div></div>`).join('')}</div></div>`;
+    html += table([
+      ['Region', r=>esc(r.key)],
+      ['Dealers', r=>esc(r.dealers)],
+      ['Units', r=>esc((r.total_qty||0).toLocaleString())],
+      ['Sales', r=>`<span class="nowrap">${bn(r.total_amount)}</span>`],
+    ], R.by_region||[]);
+    html += `<div class="section-title">Top dealers <span class="count">${(R.top_dealers||[]).length}</span></div>`;
+    html += table([
+      ['Shop', r=>esc(r.shop||r.code)],
+      ['Where', r=>`<span class="muted">${esc(r.township||'')} · ${esc(r.region||'')}</span>`],
+      ['Units', r=>esc((r.total_qty||0).toLocaleString())],
+      ['Sales', r=>`<span class="nowrap">${bn(r.total_amount)}</span>`],
+      ['Rebate', r=>`<span class="pill mut">${esc(r.rebate_pct)}%</span>`],
+    ], R.top_dealers||[]);
+  }
+
+  // orders & receivables (from Galaxy iStock export — galaxy-orders.mjs)
+  const ORD = d.orders;
+  if (MOD('orders') && ORD && ORD.receivables) {
+    const rc = ORD.receivables, t = rc.totals||{}, ag = t.aging||{};
+    const mn = (n)=> n==null?'—':(n/1e6).toFixed(1)+'M';
+    const ordTiles = [
+      ['Outstanding', mn(t.outstanding), `${t.dealers||0} dealers`],
+      ['Overdue 60+', mn(t.overdue_60plus), 'chase these first'],
+      ['90+ days', mn(ag['90+']), 'high risk'],
+      ['Orders', (ORD.order_count||0).toLocaleString(), `as of ${esc(ORD.as_of||'')}`],
+    ];
+    html += `<div class="section-title">Orders &amp; receivables <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· Galaxy iStock · dealer credit + aging</span>${srcTag(ORD.source)}</div>`;
+    html += `<div class="card"><div class="grid">${ordTiles.map(x=>`<div class="tile"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${esc(x[2])}</div></div>`).join('')}</div></div>`;
+    if ((rc.by_dealer||[]).length) {
+      html += `<div class="section-title">Dealer credit — by balance <span class="count">${rc.by_dealer.length}</span></div>`;
+      const agePill = (b)=>({'0-30':'ok','31-60':'warn','61-90':'warn','90+':'bad'}[b]||'mut');
+      html += table([
+        ['Dealer', r=>esc(r.dealer)],
+        ['Balance', r=>`<span class="nowrap">${((r.balance||0)/1e6).toFixed(2)}M</span>`],
+        ['Invoiced', r=>`<span class="muted">${((r.invoiced||0)/1e6).toFixed(1)}M</span>`],
+        ['Oldest', r=>`<span class="pill ${agePill(r.aging_bucket)}">${esc(r.aging_bucket)}${r.oldest_days?(' · '+r.oldest_days+'d'):''}</span>`],
+      ], rc.by_dealer);
+    }
+  }
+
+  // claims / procurement / raw-material — heavy ledgers, lazy-loaded (preview now, full on tap)
+  // module-gated: nulling the data makes lazySection() render nothing (it returns '' for a falsy obj)
+  if(!MOD('claims')) d.claims = null;
+  if(!MOD('procurement')) d.procurement = null;
+  if(!MOD('raw_material')) d.raw_material = null;
+  html += lazySection('claims', 'Warranty claims', d.claims, [
+    ['Claim', r=>`<span class="nowrap">${esc(r.claim_id)}</span>`],
+    ['Product', r=>esc(r.product)],
+    ['Status', r=>claimPill(r.status)],
+    ['Date', r=>`<span class="nowrap">${esc(r.date)}</span>`],
+  ]);
+  html += lazySection('procurement', 'Procurement — machine parts (TFT)', d.procurement, [
+    ['TFT', r=>`<span class="nowrap">TFT(${esc(r.tft_ref)})</span>`],
+    ['Date', r=>`<span class="nowrap">${esc(r.date)}</span>`],
+    ['Detail', r=>esc((r.note||r.subject||'').slice(0,90))],
+  ]);
+  html += lazySection('rawmat', 'Raw materials & shipments', d.raw_material, [
+    ['Date', r=>`<span class="nowrap">${esc(r.date)}</span>`],
+    ['Supplier', r=>esc(r.supplier)],
+    ['Detail', r=>esc((r.note||r.subject||'').slice(0,90))],
+  ]);
+
+  // production
+  if (MOD('production')) {
+    const prod = d.production || [];
+    html += `<div class="section-title">Production reports <span class="count">${prod.length}</span></div>`;
+    html += table([
+      ['Date', r=>`<span class="nowrap">${esc(r.date)}</span>`],
+      ['Source', r=>esc(r.source)],
+      ['Report', r=>esc(r.report)],
+    ], prod);
+  }
+
+  // contacts
+  if (MOD('parties')) {
+    const contacts = d.contacts || [];
+    html += `<div class="section-title">Parties / directory <span class="count">${contacts.length}</span></div>`;
+    html += table([
+      ['Name', r=>esc(r.name||r.email)],
+      ['Role', r=>esc(r.role)],
+      ['Org', r=>esc(r.org)],
+      ['Msgs', r=>esc(r.messages)],
+    ], contacts);
+  }
+
+  // open actions & CAPA — the "Work move": 5W1H / NCR / incident / downtime captures still open
+  const CAP = d.captures;
+  if (MOD('captures') && CAP && Array.isArray(CAP.records)) {
+    const openActions = CAP.records.filter(r => r.open);
+    if (openActions.length) {
+      html += `<div class="section-title">Open actions &amp; CAPA <span class="count">${openActions.length}</span> <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· 5W1H / NCR / downtime / safety — owner &amp; due</span></div>`;
+      const dueClass = (d2)=>{ if(!d2) return 'mut'; const t=Date.parse(d2); if(isNaN(t)) return 'mut'; const days=(t-Date.now())/864e5; return days<0?'bad':days<3?'warn':'ok'; };
+      html += table([
+        ['Item', r=>esc(String(r.summary||r.kind).slice(0,70))],
+        ['Kind', r=>`<span class="pill mut">${esc(r.kind)}</span>`],
+        ['Area', r=>`<span class="muted">${esc(r.area||'—')}</span>`],
+        ['Owner', r=>esc(r.owner||'—')],
+        ['Due', r=>`<span class="pill ${dueClass(r.due)}">${esc(r.due||'—')}</span>`],
+        ['Status', r=>`<span class="pill ${r.status==='in-progress'?'warn':'mut'}">${esc(r.status||'open')}</span>`],
+      ], openActions.slice(0,40));
+    }
+  }
+
+  // whiteboard / OCR captures (entry.html typed + whiteboard-ocr.mjs photo extraction)
+  if (MOD('captures') && CAP && CAP.count) {
+    const bk = Object.entries(CAP.by_kind || {}).map(([k, n]) => `${k} ${n}`).join(' · ');
+    html += `<div class="section-title">Whiteboard captures <span class="count">${CAP.count}</span> <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· ${esc(bk)} · typed + photo→OCR</span></div>`;
+    html += table([
+      ['When', r=>`<span class="nowrap">${esc(r.date||'—')}</span>`],
+      ['Kind', r=>`<span class="pill mut">${esc(r.kind)}</span>`],
+      ['Detail', r=>esc(String(r.summary||'').slice(0,90))],
+      ['Via', r=>`<span class="muted nowrap">${esc(r.via)}${r.confidence!=null?` ${Math.round(r.confidence*100)}%`:''}</span>`],
+    ], (CAP.records||[]).slice(0,40));
+  }
+
+  // data sources (Drive catalog) — status: live = tool-ified, planned = doc to convert, raw = folder
+  const src = MOD('data_sources') ? (d.drive_sources || []) : [];
+  if (src.length) {
+    const srcPill = (s) => ({ live:'ok', available:'warn', stale:'bad', archived:'mut' }[s] || 'mut');
+    const liveN = src.filter(x=>x.status==='live').length;
+    html += `<div class="section-title">Data sources <span class="count">${src.length}</span> <span class="muted" style="font-size:11px;text-transform:none;letter-spacing:0">· ${liveN} live · from live Drive crawl (not the stale doc)</span></div>`;
+    html += table([
+      ['Source', r=>{const h=safeHref(r.url);return h?`<a href="${esc(h)}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">${esc(r.name)} ↗</a>`:esc(r.name);}],
+      ['Owner', r=>`<span class="muted">${esc(r.owner||'')}</span>`],
+      ['As of', r=>`<span class="nowrap muted">${esc((r.as_of||'').slice(0,12))}</span>`],
+      ['Status', r=>`<span class="pill ${srcPill(r.status)}">${esc(r.status)}</span>${r.canonical?' <span class="pill ok" style="font-size:9px">canon</span>':''}`],
+    ], src);
+  }
+
+  } catch(e){ html += secErr(e); }
+  el('root').innerHTML = html || secErr('no sections rendered');
+}).catch((e)=>{
+  if(e==='auth'){
+    el('root').innerHTML = '<div class="card empty">🔒 Locked. Open the <a href="/index.html" style="color:var(--accent)">control panel</a> and enter your passcode first — the data is private and served only to an unlocked session.</div>';
+    el('sub').textContent = 'locked';
+  } else {
+    el('root').innerHTML = '<div class="card empty">No structured data yet.<br><br>Generate it: <code>node refresh.mjs</code> in <code>supermega-remote/</code>.</div>';
+    el('sub').textContent = 'no data';
+  }
+});
+</script>
+<!-- Footer nav -->
+<div class="wrap" style="margin-top:20px;padding-bottom:20px;display:flex;gap:10px;flex-wrap:wrap">
+  <a href="/notices.html" class="lzbtn" style="text-decoration:none;text-align:center;flex:1">📋 Notices</a>
+  <a href="/entry.html" class="lzbtn" style="text-decoration:none;text-align:center;flex:1">+ Capture</a>
+  <a href="/guide.html" class="lzbtn" style="text-decoration:none;text-align:center;flex:1">📖 Guide</a>
+</div>
+</body>
+</html>

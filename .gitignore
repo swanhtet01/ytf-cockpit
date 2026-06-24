@@ -1,0 +1,18 @@
+node_modules/
+.vercel/
+.env
+.env*.local
+*.log
+.DS_Store
+
+# Private data — never commit
+feed/*.json
+ytf-ops-tools/data/
+ytf-ops-tools/out/
+ytf-ops-tools/manual-entries/
+ytf-ops-tools/node_modules/
+
+# Keep the directory structure
+!feed/.gitkeep
+!ytf-ops-tools/data/.gitkeep
+!ytf-ops-tools/out/.gitkeep

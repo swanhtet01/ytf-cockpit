@@ -1,0 +1,1108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0755a5" />
+<link rel="icon" href="/ytf-mark.svg" />
+<title>User Guide — Yangon Tyre Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:wght@400..700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#F4F6F9; --panel:#FFFFFF; --panel2:#EEF2F7; --line:rgba(7,85,165,0.14);
+  --txt:#11233A; --muted:#566576; --accent:#0755a5; --accent2:#ec1c2e;
+  --ok:#16823F; --warn:#B25A0C; --bad:#ec1c2e; --chip:#EAF0F7;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sidebar-w:240px;
+}
+:root[data-theme="dark"]{
+  --bg:#0B1622; --panel:#122236; --panel2:#0E1C2C; --line:rgba(220,235,255,0.10);
+  --txt:#EAF1F9; --muted:#90A2B6; --accent:#3F90E0; --accent2:#FF5A6A;
+  --ok:#5BA46F; --warn:#E8A23D; --bad:#FF5A6A; --chip:#122236;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:15px;line-height:1.65}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:560;letter-spacing:-.02em;margin:0 0 .5em}
+h1{font-size:26px} h2{font-size:21px;margin-top:2em} h3{font-size:17px;margin-top:1.5em} h4{font-size:14px;margin-top:1.2em;font-family:inherit;font-weight:700}
+p{margin:0 0 .9em}
+a{color:var(--accent)}
+code{background:var(--panel2);padding:2px 6px;border-radius:5px;font-size:12.5px;font-family:"SF Mono","Fira Code",monospace}
+pre{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:12px;overflow:auto;line-height:1.5}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:1em 0}
+th{text-align:left;background:var(--chip);padding:9px 11px;font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--line)}
+td{padding:9px 11px;border-bottom:1px solid var(--panel2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.pill{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:999px;font-weight:700;white-space:nowrap}
+.pill.ok{background:color-mix(in srgb,var(--ok) 14%,var(--panel));color:var(--ok)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 14%,var(--panel));color:var(--bad)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 16%,var(--panel));color:var(--warn)}
+.pill.info{background:var(--chip);color:var(--accent)}
+
+/* Layout */
+.layout{display:flex;min-height:100vh}
+nav.sidebar{
+  width:var(--sidebar-w);flex:0 0 var(--sidebar-w);
+  background:var(--panel);border-right:1px solid var(--line);
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  padding:20px 0;
+}
+nav.sidebar .logo-row{display:flex;align-items:center;gap:9px;padding:0 16px 18px;border-bottom:1px solid var(--line);margin-bottom:10px}
+nav.sidebar .logo-row img{width:32px;height:32px}
+nav.sidebar .logo-row strong{font-family:var(--serif);font-size:14px;color:var(--txt)}
+nav.sidebar ul{list-style:none;margin:0;padding:0}
+nav.sidebar ul li a{display:block;padding:7px 16px;color:var(--muted);font-size:13px;text-decoration:none;border-left:3px solid transparent;transition:all .15s}
+nav.sidebar ul li a:hover{color:var(--accent);background:var(--panel2)}
+nav.sidebar ul li a.active{color:var(--accent);border-left-color:var(--accent);background:var(--chip)}
+nav.sidebar .nav-group{padding:4px 16px 2px;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:10px;font-weight:700}
+.main{flex:1;min-width:0;padding:28px 28px 80px;max-width:820px}
+@media (max-width:740px){
+  .layout{flex-direction:column}
+  nav.sidebar{position:static;width:100%;height:auto;flex:none;border-right:none;border-bottom:1px solid var(--line);padding:12px 0 8px}
+  nav.sidebar ul li a{padding:6px 14px;font-size:12.5px}
+  .nav-group{padding:4px 14px 2px !important}
+  .main{padding:18px 14px 60px}
+}
+@media (min-width:1100px){.main{padding:32px 48px 80px}}
+
+/* Callout boxes */
+.callout{border-radius:12px;padding:13px 15px;margin:1em 0;font-size:13.5px;border-left:4px solid}
+.callout.note{background:var(--chip);border-color:var(--accent)}
+.callout.warn{background:color-mix(in srgb,var(--warn) 10%,var(--panel));border-color:var(--warn)}
+.callout.tip{background:color-mix(in srgb,var(--ok) 8%,var(--panel));border-color:var(--ok)}
+.callout strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;opacity:.7}
+
+/* Step list */
+ol.steps{margin:.5em 0 1em;padding-left:1.4em}
+ol.steps li{margin-bottom:.5em}
+ol.steps li strong{color:var(--accent)}
+
+/* Card-like sections */
+.section-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:1em 0}
+
+/* Role badges */
+.role-badge{display:inline-block;background:var(--chip);color:var(--accent);font-size:11px;padding:2px 9px;border-radius:999px;font-weight:700;font-family:"SF Mono","Fira Code",monospace}
+
+/* Inline screen mockup */
+.mock{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin:.7em 0;font-size:12.5px;color:var(--muted)}
+.mock strong{color:var(--txt);display:block;font-size:12px;font-weight:700;margin-bottom:5px}
+
+/* Anchor offset for sticky header */
+section[id]{scroll-margin-top:20px}
+
+/* TOC top bar mobile */
+.mobile-toc{display:none}
+@media (max-width:740px){.mobile-toc{display:block;background:var(--panel);border-bottom:1px solid var(--line);padding:8px 14px 6px}}
+.mobile-toc select{width:100%;border:1px solid var(--line);background:var(--panel2);color:var(--txt);padding:8px 10px;border-radius:8px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- Sidebar nav -->
+<nav class="sidebar">
+  <div class="logo-row">
+    <img src="/ytf-mark.svg" alt="Yangon Tyre" />
+    <strong>YTF Portal<br><span style="font-weight:400;font-size:11px;color:var(--muted)">User Guide</span></strong>
+  </div>
+  <ul>
+    <li class="nav-group">Overview</li>
+    <li><a href="#what-is-this">What is this portal?</a></li>
+    <li><a href="#access">How to access</a></li>
+    <li><a href="#roles">Roles &amp; access levels</a></li>
+
+    <li class="nav-group">Screens</li>
+    <li><a href="#home">Home (Control Panel)</a></li>
+    <li><a href="#ops">Full Detail</a></li>
+    <li><a href="#capture">Capture &amp; Entry</a></li>
+    <li><a href="#notices">Notice Board</a></li>
+    <li><a href="#admin">Admin Console</a></li>
+
+    <li class="nav-group">Modules</li>
+    <li><a href="#module-production">Production</a></li>
+    <li><a href="#module-stock">Stock &amp; Inventory</a></li>
+    <li><a href="#module-quality">Quality / OEE</a></li>
+    <li><a href="#module-orders">Orders &amp; Receivables</a></li>
+    <li><a href="#module-claims">Warranty Claims</a></li>
+    <li><a href="#module-insights">Intelligence &amp; Alerts</a></li>
+    <li><a href="#module-capa">CAPA &amp; Actions</a></li>
+
+    <li class="nav-group">Daily Workflows</li>
+    <li><a href="#workflow-ceo">CEO / Owner</a></li>
+    <li><a href="#workflow-manager">Manager</a></li>
+    <li><a href="#workflow-plant">Plant Manager</a></li>
+    <li><a href="#workflow-admin">Admin</a></li>
+
+    <li class="nav-group">Data &amp; Setup</li>
+    <li><a href="#data-pipeline">Data pipeline</a></li>
+    <li><a href="#alerts-guide">Alert meanings &amp; actions</a></li>
+    <li><a href="#setup-users">Setting up users</a></li>
+    <li><a href="#setup-istock">Connecting Galaxy iStock</a></li>
+    <li><a href="#setup-viber">Viber integration</a></li>
+    <li><a href="#troubleshoot">Troubleshooting</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+  </ul>
+</nav>
+
+<!-- Mobile top TOC -->
+<div class="mobile-toc">
+  <select onchange="location.hash=this.value;this.value=''">
+    <option value="">Jump to section…</option>
+    <optgroup label="Overview">
+      <option value="#what-is-this">What is this portal?</option>
+      <option value="#access">How to access</option>
+      <option value="#roles">Roles &amp; access</option>
+    </optgroup>
+    <optgroup label="Screens">
+      <option value="#home">Home</option>
+      <option value="#ops">Full Detail</option>
+      <option value="#capture">Capture &amp; Entry</option>
+      <option value="#notices">Notice Board</option>
+      <option value="#admin">Admin Console</option>
+    </optgroup>
+    <optgroup label="Daily Workflows">
+      <option value="#workflow-ceo">CEO</option>
+      <option value="#workflow-manager">Manager</option>
+      <option value="#workflow-plant">Plant Manager</option>
+      <option value="#workflow-admin">Admin</option>
+    </optgroup>
+    <optgroup label="Data &amp; Setup">
+      <option value="#data-pipeline">Data pipeline</option>
+      <option value="#alerts-guide">Alert meanings</option>
+      <option value="#setup-users">Setting up users</option>
+      <option value="#setup-istock">Galaxy iStock</option>
+      <option value="#setup-viber">Viber integration</option>
+      <option value="#troubleshoot">Troubleshooting</option>
+      <option value="#glossary">Glossary</option>
+    </optgroup>
+  </select>
+</div>
+
+<!-- Main content -->
+<main class="main">
+
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+  <img src="/ytf-mark.svg" alt="" style="width:36px;height:36px" />
+  <div>
+    <h1 style="margin:0;font-size:22px">Yangon Tyre Portal — User Guide</h1>
+    <div style="font-size:12px;color:var(--muted)">ops.supermega.dev · For all roles</div>
+  </div>
+  <span style="flex:1"></span>
+  <a href="/index.html" style="font-size:12.5px;color:var(--accent);background:var(--chip);padding:7px 12px;border-radius:8px;text-decoration:none;border:1px solid var(--line)">← Back to portal</a>
+</div>
+
+<!-- ═══════════════════════════════════ OVERVIEW ═══════════════════════════════════ -->
+
+<section id="what-is-this">
+<h2>What is this portal?</h2>
+<p>The <strong>Yangon Tyre Operations Portal</strong> is a private, phone-friendly dashboard that gives the YTF team a single live view of the factory — production numbers, raw-material stock, warranty claims, orders, receivables, and quality scores — without replacing anything you already use.</p>
+
+<div class="section-card">
+  <h4>Two surfaces — one system</h4>
+  <table>
+    <tr><th>Surface</th><th>URL</th><th>Best for</th></tr>
+    <tr><td><strong>Operations cockpit</strong> (this guide)</td><td>ops.supermega.dev</td><td>Owner / managers on phone — live numbers, alerts, captures</td></tr>
+    <tr><td><strong>YTF ERP portal</strong></td><td>ytf.supermega.dev</td><td>Staff at desk — data entry, daily close, work board, payroll</td></tr>
+  </table>
+  <p style="margin:0;font-size:12.5px;color:var(--muted)">The cockpit reads from Drive, Gmail, Viber, and Galaxy iStock automatically. The ERP is where staff record and approve data. Neither replaces the other.</p>
+</div>
+
+<div class="callout note">
+  <strong>Important</strong>
+  This portal is private to Yangon Tyre. Your passcode never appears in the URL bar. Do not share the passcode with anyone outside the company.
+</div>
+</section>
+
+<!-- ═══════════════════════════════════ ACCESS ═══════════════════════════════════ -->
+
+<section id="access">
+<h2>How to access</h2>
+
+<ol class="steps">
+  <li><strong>Open your browser</strong> and go to <code>ops.supermega.dev</code> (or the current stable URL — ask admin if unsure).</li>
+  <li><strong>Enter your passcode</strong> when prompted. Each role has its own passcode — do not mix accounts.</li>
+  <li><strong>Add to home screen</strong> (recommended): in Safari/Chrome, use "Add to Home Screen" so it opens as an app without the browser bar, with full portrait/landscape support.</li>
+</ol>
+
+<div class="section-card">
+  <h4>Install as a mobile app (PWA)</h4>
+  <table>
+    <tr><th>Device</th><th>Steps</th></tr>
+    <tr><td>iPhone / iPad (Safari)</td><td>Tap the <strong>Share</strong> button → <strong>Add to Home Screen</strong> → Add</td></tr>
+    <tr><td>Android (Chrome)</td><td>Tap the three-dot menu → <strong>Add to Home screen</strong></td></tr>
+    <tr><td>Desktop (Chrome)</td><td>Address bar → install icon on the right</td></tr>
+  </table>
+</div>
+
+<div class="callout tip">
+  <strong>Tip</strong>
+  The portal works offline for the last-loaded data. Pull down on the home screen to force a data refresh (or tap the refresh button in admin panel).
+</div>
+</section>
+
+<!-- ═══════════════════════════════════ ROLES ═══════════════════════════════════ -->
+
+<section id="roles">
+<h2>Roles &amp; access levels</h2>
+
+<p>Every user has one of four roles. Your role controls what you see and what actions you can trigger. The admin console sets who has which role.</p>
+
+<table>
+  <tr>
+    <th>Role</th>
+    <th>What they see</th>
+    <th>Gmail data</th>
+    <th>Can run refresh</th>
+  </tr>
+  <tr>
+    <td><span class="role-badge">admin</span></td>
+    <td>Everything + system health + pipeline controls. Can see all groups, all modules, and the admin console.</td>
+    <td><span class="pill warn">No</span></td>
+    <td><span class="pill ok">Full</span></td>
+  </tr>
+  <tr>
+    <td><span class="role-badge">ceo</span></td>
+    <td>Everything including finance, procurement (TFT), warranty claims with email context, and company-wide view.</td>
+    <td><span class="pill ok">Yes (only role)</span></td>
+    <td><span class="pill ok">Full</span></td>
+  </tr>
+  <tr>
+    <td><span class="role-badge">manager</span></td>
+    <td>Cross-plant ops — production, stock, quality, orders. Head-office view. No email-sourced private data.</td>
+    <td><span class="pill mut">No</span></td>
+    <td><span class="pill info">Pipeline + insights</span></td>
+  </tr>
+  <tr>
+    <td><span class="role-badge">plant_manager</span></td>
+    <td>Their plant's numbers only — production, stock, quality, and their Viber group. Cannot see cross-plant finance.</td>
+    <td><span class="pill mut">No</span></td>
+    <td><span class="pill info">Pipeline only</span></td>
+  </tr>
+</table>
+
+<div class="callout warn">
+  <strong>Security</strong>
+  Gmail-sourced data (procurement costs, TFT threads, financial claims) is only ever shown to the CEO role. If you are not logged in as CEO, those sections will be empty or hidden — this is correct behavior.
+</div>
+
+<h3>Viber groups per role</h3>
+<p>Your role also controls which Viber groups you can see in the capture and notice board. A plant_manager for Plant A cannot see Plant B's Viber channel. The admin sets group assignments in <code>PANEL_USERS</code>.</p>
+
+<table>
+  <tr><th>Role</th><th>Default groups</th></tr>
+  <tr><td><span class="role-badge">admin</span></td><td>All groups (<code>*</code>)</td></tr>
+  <tr><td><span class="role-badge">ceo</span></td><td>All groups (<code>*</code>)</td></tr>
+  <tr><td><span class="role-badge">manager</span></td><td>plant-a, plant-b, head-office</td></tr>
+  <tr><td><span class="role-badge">plant_manager</span></td><td>Their plant only (e.g. plant-a)</td></tr>
+</table>
+</section>
+
+<!-- ═══════════════════════════════════ HOME ═══════════════════════════════════ -->
+
+<section id="home">
+<h2>Home screen — Control Panel</h2>
+
+<p>This is the first screen you see after logging in. It is designed for one purpose: <em>at a glance, is the factory running normally right now?</em></p>
+
+<div class="section-card">
+  <h4>Header bar</h4>
+  <p>The colored dot next to the Yangon Tyre logo tells you the overall system health at a glance:</p>
+  <table>
+    <tr><th>Dot color</th><th>Meaning</th></tr>
+    <tr><td><span class="pill ok">Green / pulse</span></td><td>Data is fresh (refreshed today), no critical alerts</td></tr>
+    <tr><td><span class="pill warn">Yellow</span></td><td>Data may be stale OR there are warnings that need attention</td></tr>
+    <tr><td><span class="pill bad">Red</span></td><td>Critical alert — stock-out risk, overdue receivables, major scrap issue</td></tr>
+    <tr><td><span class="pill mut">Grey</span></td><td>Data not yet loaded or connection issue</td></tr>
+  </table>
+</div>
+
+<h3>The Operations card</h3>
+<p>The main card shows the three numbers that matter most right now:</p>
+<table>
+  <tr><th>Tile</th><th>What it shows</th><th>When to act</th></tr>
+  <tr><td>Tyres (YTD)</td><td>Total tyres produced year-to-date (PCR + Motorcycle combined)</td><td>If trending behind plan for the month</td></tr>
+  <tr><td>Stock · Low</td><td>Raw materials on hand and how many are low / near stock-out</td><td>Any "Low" &gt; 0 means reorder needed</td></tr>
+  <tr><td>Claims</td><td>Open warranty claims count and % resolved</td><td>Resolution rate below 80% needs follow-up</td></tr>
+</table>
+
+<h3>Alert cards</h3>
+<p>Below the main tiles, the portal shows intelligence signals — ranked by severity. Each alert has a short recommended action. Tap or click the alert to expand it.</p>
+
+<div class="mock">
+  <strong>Example alerts</strong>
+  🔴 Premium diesel — ~1 day to stockout · <em>Action: Emergency PO with TFT today</em><br>
+  🟡 Polyester cord — ~4 days · <em>Action: Confirm in-transit ETA</em><br>
+  🟢 Production on track — 249k YTD
+</div>
+
+<h3>Action buttons</h3>
+<table>
+  <tr><th>Button</th><th>What it does</th></tr>
+  <tr><td>+ Capture</td><td>Opens the entry screen to record a whiteboard photo, Viber message, or typed note</td></tr>
+  <tr><td>Full detail →</td><td>Opens the structured ledgers screen with all production, stock, quality, and financial data</td></tr>
+  <tr><td>Open full ERP →</td><td>Deep-links to ytf.supermega.dev for daily entry, work board, payroll, and sign-off</td></tr>
+</table>
+
+<h3>System details (collapsed)</h3>
+<p>The "System status" section is collapsed by default. Tap it to see pipeline health, last refresh time, and job status. This is for admin / tech troubleshooting — normal users do not need to open it.</p>
+</section>
+
+<!-- ═══════════════════════════════════ OPS ═══════════════════════════════════ -->
+
+<section id="ops">
+<h2>Full Detail screen (ops.html)</h2>
+
+<p>Reached via the <strong>Full detail →</strong> button. Shows every operational module in one scrolling page. Has a universal search bar at the top — type any tyre size, claim ID, material name, or dealer name to filter every table at once.</p>
+
+<h3>Search bar</h3>
+<p>The search applies instantly to all tables. Examples:</p>
+<ul>
+  <li>Type <code>195/85</code> to find all rows for that tyre size across production, stock, and scrap</li>
+  <li>Type <code>TFT</code> to find all TFT (Thailand) procurement threads</li>
+  <li>Type a dealer name to find their invoices in the receivables table</li>
+  <li>Type <code>overdue</code> to show only overdue items</li>
+</ul>
+
+<h3>Production section</h3>
+<p>Shows PCR/Radial and Motorcycle production for the current year, broken down by tyre size. Each line shows: size, quantity produced, target (if set), acceptance rate, and reject rate.</p>
+
+<div class="callout note">
+  <strong>Scrap Pareto</strong>
+  The Scrap Pareto table is sorted by reject <em>rate</em> (not total count) so the worst quality sizes appear first. Sizes with fewer than 100 tyres produced are excluded (too small a sample to be meaningful).
+</div>
+
+<h3>Stock &amp; inventory section</h3>
+<p>Shows raw materials on hand, in-transit, and days-to-stockout. Color coding:</p>
+<table>
+  <tr><th>Color</th><th>Days to stockout</th><th>What to do</th></tr>
+  <tr><td><span class="pill bad">Red</span></td><td>&lt; 7 days</td><td>Emergency PO — contact TFT or KIIC today</td></tr>
+  <tr><td><span class="pill warn">Yellow</span></td><td>7–21 days</td><td>Raise PO this week</td></tr>
+  <tr><td><span class="pill ok">Green</span></td><td>&gt; 21 days</td><td>Normal — monitor</td></tr>
+</table>
+
+<h3>Quality / OEE section</h3>
+<p>Overall Equipment Effectiveness (OEE) = Availability × Performance × Quality.</p>
+<table>
+  <tr><th>Metric</th><th>Formula</th><th>What it means</th></tr>
+  <tr><td>Availability (A)</td><td>(Planned time − Downtime) ÷ Planned time</td><td>How much time the machines were actually running vs scheduled</td></tr>
+  <tr><td>Performance (P)</td><td>Actual output ÷ Ideal output</td><td>How fast the line ran vs its rated speed</td></tr>
+  <tr><td>Quality (Q)</td><td>Good tyres ÷ Total tyres</td><td>First-pass yield — accepted vs all produced</td></tr>
+</table>
+<p>If the downtime log is empty, the portal shows P×Q only (partial OEE) with a note "Log downtime in Capture → full OEE". Once captures include downtime records, full OEE appears automatically.</p>
+
+<h3>Orders &amp; receivables section</h3>
+<p>Pulled from Galaxy iStock exports. Shows:</p>
+<ul>
+  <li><strong>Outstanding balance</strong> — total money owed by all dealers</li>
+  <li><strong>Overdue 60+ days</strong> — highest-risk receivables</li>
+  <li><strong>Dealer credit table</strong> — sorted by balance, with aging bucket colored</li>
+</ul>
+<div class="callout warn">
+  <strong>Action guide</strong>
+  90+ days = pause credit + payment plan. 61–90 days = follow-up call. 31–60 days = send reminder.
+</div>
+
+<h3>CAPA &amp; open actions</h3>
+<p>Shows all open corrective actions from captures — whiteboard photos, Viber extractions, and typed entries. Each action shows: description, owner, due date (color-coded), and status. Resolved actions are hidden.</p>
+
+<h3>Whiteboard captures</h3>
+<p>Shows all captured whiteboard records not yet classified as actions — raw data from photos and Viber messages, with date, source, and extracted values.</p>
+</section>
+
+<!-- ═══════════════════════════════════ CAPTURE ═══════════════════════════════════ -->
+
+<section id="capture">
+<h2>Capture &amp; Entry screen (entry.html)</h2>
+
+<p>This is how the team records information — whiteboard photos, Viber messages, and typed notes. Everything captured here feeds into the CAPA board and the Full Detail screen automatically after the next refresh.</p>
+
+<h3>Photo capture (whiteboard OCR)</h3>
+<ol class="steps">
+  <li><strong>Tap "Take photo"</strong> or the camera icon. On mobile this opens your camera directly.</li>
+  <li><strong>Point at the whiteboard</strong> clearly — make sure text is readable and not glare-blurred.</li>
+  <li><strong>Tap "Capture".</strong> The photo downloads to your device.</li>
+  <li><strong>Drop or upload</strong> the photo into the <code>data/captures/</code> folder in Google Drive (or forward to admin).</li>
+  <li>On the next scheduled refresh (or when admin runs sync), the photo is sent to AI vision and values extracted — output, reject count, downtime, action items.</li>
+</ol>
+
+<div class="callout tip">
+  <strong>Tip for better OCR</strong>
+  Stand 1–1.5m from the board. Use natural light (not harsh flash). Write numbers large. Avoid overlapping text near the edges.
+</div>
+
+<h3>Viber paste (group messages)</h3>
+<ol class="steps">
+  <li><strong>Open Viber Desktop</strong> on the office computer.</li>
+  <li><strong>Select the messages</strong> you want to record (e.g. order confirmations, stock movements, payments from the group chat).</li>
+  <li><strong>Copy</strong> (Ctrl+C).</li>
+  <li>In the portal, tap <strong>"+ Capture"</strong> → <strong>Viber paste</strong> tab.</li>
+  <li>Select the group name from the dropdown, then paste the text.</li>
+  <li>Tap <strong>Save</strong>. The messages are queued for AI extraction on next refresh.</li>
+</ol>
+<p>Supported record types: orders, payments, stock movements, delivery confirmations, claims, complaints.</p>
+
+<h3>Typed entry</h3>
+<p>For quick one-line records — abnormalities, maintenance notes, quality holds. Select the type from the dropdown, fill in the fields (description, area/machine, owner, due date), and tap Save.</p>
+
+<h3>Viewing saved captures</h3>
+<p>Tap <strong>List</strong> to see recent saved captures. Captures show as cards with their type, source, and extracted data. Records that have been promoted to the CAPA board show "Action created".</p>
+</section>
+
+<!-- ═══════════════════════════════════ NOTICE BOARD ═══════════════════════════════════ -->
+
+<section id="notices">
+<h2>Notice Board (team collaboration)</h2>
+
+<p>The <strong>Notice Board</strong> is a shared space for the whole YTF team — announcements, shift handovers, and important reminders visible to all roles with permission. It is accessible from the home screen via the "Notices" button.</p>
+
+<div class="section-card">
+  <h4>Who can post</h4>
+  <table>
+    <tr><th>Role</th><th>Can post</th><th>Can read</th><th>Can pin</th></tr>
+    <tr><td>admin</td><td>Yes</td><td>Yes (all)</td><td>Yes</td></tr>
+    <tr><td>ceo</td><td>Yes</td><td>Yes (all)</td><td>Yes</td></tr>
+    <tr><td>manager</td><td>Yes (own group)</td><td>Yes (own groups)</td><td>No</td></tr>
+    <tr><td>plant_manager</td><td>Yes (own plant)</td><td>Yes (own plant)</td><td>No</td></tr>
+  </table>
+</div>
+
+<h3>Posting a notice</h3>
+<ol class="steps">
+  <li><strong>Tap "+ New notice"</strong> from the home screen or notice board.</li>
+  <li><strong>Select the group</strong> — which plant / head office this is for.</li>
+  <li><strong>Select the type</strong> — Announcement, Shift handover, Urgent alert, or General.</li>
+  <li><strong>Write your message.</strong> Keep it short and clear. You can mention an action owner with @name.</li>
+  <li><strong>Tap Post.</strong> The notice appears immediately to all users with access to that group.</li>
+</ol>
+
+<h3>Shift handover notices</h3>
+<p>At the end of each shift, the plant manager or floor manager should post a <strong>Shift handover</strong> notice. This tells the next shift what happened, what's pending, and any issues to watch. Standard fields:</p>
+<ul>
+  <li>Output this shift (e.g. PCR 240 pcs, MC 180 pcs)</li>
+  <li>Reject count + cause if high</li>
+  <li>Machine issues / downtime</li>
+  <li>Pending work from outgoing shift</li>
+  <li>Priority for incoming shift</li>
+</ul>
+
+<div class="callout tip">
+  <strong>Best practice</strong>
+  Post handover notices before leaving the shift — not the next morning. The incoming shift reads them on their phone before they arrive.
+</div>
+</section>
+
+<!-- ═══════════════════════════════════ ADMIN ═══════════════════════════════════ -->
+
+<section id="admin">
+<h2>Admin Console (admin.html)</h2>
+
+<p>Admin-only screen. Access via <code>ops.supermega.dev/admin.html</code>. Used to manage users, generate configuration, and monitor pipeline health.</p>
+
+<div class="callout warn">
+  <strong>Admin only</strong>
+  Do not share the admin page URL with plant managers or regular managers. They should only access the main portal at <code>ops.supermega.dev</code>.
+</div>
+
+<h3>User management</h3>
+<p>The admin console generates the <code>PANEL_USERS</code> configuration that controls all access tokens and role assignments. To add or change a user:</p>
+<ol class="steps">
+  <li>Open <code>admin.html</code> and log in with your admin token.</li>
+  <li>In the <strong>Users</strong> section, add a row: role, display name, and Viber groups.</li>
+  <li>The console generates a token for that user.</li>
+  <li>Copy the generated <code>PANEL_USERS</code> JSON and paste it into Vercel → Settings → Environment Variables → <code>PANEL_USERS</code>.</li>
+  <li>Trigger a redeploy (or it takes effect on the next deploy).</li>
+  <li>Send the user their token (passcode). They enter it on the login screen.</li>
+</ol>
+
+<h3>Pipeline health</h3>
+<p>The admin console shows which data sources were last refreshed and when. Columns: source name, last refresh time, row count, and status. If a source shows "stale" (older than 48h), it means the scheduled refresh failed or the source file changed.</p>
+
+<h3>Running a manual refresh</h3>
+<ol class="steps">
+  <li>On the admin PC (with Node.js and the repo checked out), open PowerShell.</li>
+  <li>Run <code>./sync.ps1</code> from the <code>supermega-remote</code> folder.</li>
+  <li>The script pulls from Google Drive, rebuilds all data modules in parallel, and deploys to Vercel.</li>
+  <li>Refresh your portal browser tab — new data appears immediately.</li>
+</ol>
+
+<h3>Module toggles</h3>
+<p>In <code>config.json</code>, modules can be enabled or disabled per client. Relevant toggles for YTF:</p>
+<table>
+  <tr><th>Key</th><th>What it controls</th><th>Current</th></tr>
+  <tr><td>production_mc</td><td>Motorcycle line data</td><td><span class="pill ok">true</span></td></tr>
+  <tr><td>orders</td><td>Galaxy iStock orders + receivables</td><td><span class="pill ok">true</span></td></tr>
+  <tr><td>captures</td><td>Whiteboard OCR + Viber captures</td><td><span class="pill ok">true</span></td></tr>
+  <tr><td>quality_wcm</td><td>Full OEE + WCM/ISO scorecard</td><td><span class="pill warn">false (flip to enable)</span></td></tr>
+</table>
+</section>
+
+<!-- ═══════════════════════════════════ MODULES ═══════════════════════════════════ -->
+
+<section id="module-production">
+<h2>Module: Production</h2>
+
+<p>Shows year-to-date production across all tyre lines. Data comes from the annual production workbook in Google Drive, updated on each refresh.</p>
+
+<table>
+  <tr><th>Field</th><th>Meaning</th></tr>
+  <tr><td>Size</td><td>Tyre size code (e.g. 195/85 R16, 2.75-17)</td></tr>
+  <tr><td>Produced</td><td>Total tyres produced YTD for that size</td></tr>
+  <tr><td>Accepted</td><td>Tyres that passed quality inspection</td></tr>
+  <tr><td>Off-spec / Rejected</td><td>Tyres that failed — counted as scrap</td></tr>
+  <tr><td>Off% (reject rate)</td><td>Rejected ÷ Total. Sorted by this in the Scrap Pareto table</td></tr>
+</table>
+
+<div class="section-card">
+  <h4>PCR / Radial line</h4>
+  <p>Passenger Car Radial tyres produced in Yangon. Current YTD: ~93,026 pcs across 23 sizes.</p>
+  <h4>Motorcycle (MC) line</h4>
+  <p>Motorcycle tyres. Current YTD: ~156,095 pcs across 39 sizes.</p>
+  <h4>Total</h4>
+  <p>PCR + MC = 249,121 tyres YTD. This is the headline number on the home screen.</p>
+</div>
+</section>
+
+<section id="module-stock">
+<h2>Module: Stock &amp; Inventory</h2>
+
+<p>Raw material stock levels, updated from Drive workbooks and Galaxy iStock exports. Shows on-hand quantities, in-transit (expected), and days-to-stockout.</p>
+
+<h3>Days-to-stockout calculation</h3>
+<p>The portal estimates stockout date using average daily consumption from the last 30 days versus current on-hand + in-transit. This is an estimate — actual consumption varies by production plan.</p>
+
+<h3>In-transit materials</h3>
+<p>Materials ordered but not yet received. Sourced from TFT/KIIC email threads (CEO only) and Viber confirmations. Shows expected arrival date if known.</p>
+
+<h3>Stock by site</h3>
+<p>When multiple sites/warehouses are configured, stock shows per-site totals (Factory A / Factory B / Showroom / Head Office) plus consolidated.</p>
+</section>
+
+<section id="module-quality">
+<h2>Module: Quality / OEE / WCM</h2>
+
+<h3>OEE (Overall Equipment Effectiveness)</h3>
+<p>The three components are sourced differently:</p>
+<table>
+  <tr><th>Component</th><th>Data source</th><th>Status</th></tr>
+  <tr><td>Availability (A)</td><td>Downtime captures (whiteboard, Viber, or typed entry)</td><td>Active when captures logged</td></tr>
+  <tr><td>Performance (P)</td><td>Actual output vs rated capacity from production workbook</td><td>Always active</td></tr>
+  <tr><td>Quality (Q)</td><td>Accepted vs total from production workbook</td><td>Always active</td></tr>
+</table>
+
+<div class="callout note">
+  <strong>To activate full OEE</strong>
+  Log downtime events via Capture (entry.html). Each downtime record should include: machine/press, duration in minutes, and cause. Once any downtime capture exists, full A×P×Q is calculated and displayed automatically.
+</div>
+
+<h3>WCM / ISO scorecard</h3>
+<p>When <code>quality_wcm: true</code> is set in config, the portal shows a scorecard mapped to ISO 9001 / IATF 16949 pillars: Safety, Quality, Delivery, Cost, Morale (SQDCM). Enable this once WCM data is being captured regularly.</p>
+</section>
+
+<section id="module-orders">
+<h2>Module: Orders &amp; Receivables</h2>
+
+<p>Sourced from Galaxy iStock export files dropped into the Drive folder. Shows the full receivables picture — who owes money, how much, and how overdue they are.</p>
+
+<h3>Aging buckets</h3>
+<table>
+  <tr><th>Bucket</th><th>Days outstanding</th><th>Recommended action</th></tr>
+  <tr><td><span class="pill ok">0–30 days</span></td><td>Current</td><td>Normal — monitor</td></tr>
+  <tr><td><span class="pill info">31–60 days</span></td><td>Approaching overdue</td><td>Send payment reminder</td></tr>
+  <tr><td><span class="pill warn">61–90 days</span></td><td>Overdue</td><td>Follow-up call; escalate to manager</td></tr>
+  <tr><td><span class="pill bad">90+ days</span></td><td>Seriously overdue</td><td>Pause credit; set up payment plan; escalate to CEO</td></tr>
+</table>
+
+<h3>To update the receivables data</h3>
+<ol class="steps">
+  <li>In Galaxy iStock: run <strong>Sales Register</strong> and <strong>Outstanding Receivables</strong> report → Export to Excel.</li>
+  <li>Drop the file into the Drive "Galaxy export" folder.</li>
+  <li>Run a refresh (<code>sync.ps1</code>) — the adapter picks it up automatically.</li>
+  <li>The Orders &amp; receivables section shows updated numbers.</li>
+</ol>
+</section>
+
+<section id="module-claims">
+<h2>Module: Warranty Claims</h2>
+
+<p>Sourced from Gmail (CEO only) and Viber captures. Tracks claim lifecycle: received → under review → resolved / rejected.</p>
+
+<table>
+  <tr><th>Field</th><th>Meaning</th></tr>
+  <tr><td>Claim ID</td><td>Internal reference (from email thread or Viber)</td></tr>
+  <tr><td>Product</td><td>Tyre size or model with the claim</td></tr>
+  <tr><td>Status</td><td>Open / Under review / Resolved / Rejected</td></tr>
+  <tr><td>Amount</td><td>Claim value in Kyat (CEO only)</td></tr>
+  <tr><td>Dealer / Customer</td><td>Who raised the claim</td></tr>
+</table>
+
+<div class="callout note">
+  <strong>CEO-only data</strong>
+  Claim amounts and dealer names from Gmail threads are only visible to the CEO role. Other roles see counts and status only.
+</div>
+</section>
+
+<section id="module-insights">
+<h2>Module: Intelligence &amp; Alerts</h2>
+
+<p>Cross-module signals generated automatically from all data sources. Each signal has a severity (ok / warning / critical), a description, and a recommended action.</p>
+
+<h3>Signal types</h3>
+<table>
+  <tr><th>Signal</th><th>Trigger condition</th><th>Recommended action</th></tr>
+  <tr><td>Stock-out risk</td><td>Days-to-stockout &lt; 7</td><td>Emergency PO with TFT/KIIC today</td></tr>
+  <tr><td>Low stock warning</td><td>Days-to-stockout 7–21</td><td>Raise PO this week</td></tr>
+  <tr><td>Overdue receivables</td><td>Any dealer 60+ days outstanding</td><td>Chase payment; consider credit pause</td></tr>
+  <tr><td>High scrap rate</td><td>Any size with reject rate &gt; 5%</td><td>Investigate cause; raise CAPA</td></tr>
+  <tr><td>Claim spike</td><td>Claims count up &gt;20% vs prior period</td><td>Quality review; check incoming materials</td></tr>
+  <tr><td>Production behind plan</td><td>MTD output &lt;90% of monthly target</td><td>Review line schedule; check downtime</td></tr>
+  <tr><td>Open CAPA overdue</td><td>Any action past due date</td><td>Chase owner; escalate</td></tr>
+</table>
+
+<h3>Signal severity</h3>
+<p><span class="pill bad">Critical</span> signals appear at the top of the home screen in red. <span class="pill warn">Warning</span> in yellow. <span class="pill ok">OK</span> signals only show in the Full Detail screen.</p>
+</section>
+
+<section id="module-capa">
+<h2>Module: CAPA &amp; Open Actions</h2>
+
+<p>CAPA = Corrective Action and Preventive Action. Every abnormality, scrap event, machine issue, or quality hold that is captured becomes an action in this board.</p>
+
+<h3>Action fields</h3>
+<table>
+  <tr><th>Field</th><th>How it's set</th></tr>
+  <tr><td>Description</td><td>From the capture (OCR / Viber / typed)</td></tr>
+  <tr><td>Owner</td><td>Person responsible (set in capture form)</td></tr>
+  <tr><td>Due date</td><td>Set in capture form; color-coded when overdue</td></tr>
+  <tr><td>Status</td><td>Open / In progress / Resolved / Closed</td></tr>
+  <tr><td>Source</td><td>Whiteboard photo / Viber / Typed / 5W1H</td></tr>
+</table>
+
+<h3>Closing an action</h3>
+<p>When an action is completed:</p>
+<ol class="steps">
+  <li>In the ERP (ytf.supermega.dev), open the Work Board.</li>
+  <li>Find the action, add proof (photo or note), and set status to "Resolved".</li>
+  <li>After the next refresh, the action disappears from the CAPA board in the cockpit.</li>
+</ol>
+</section>
+
+<!-- ═══════════════════════════════════ WORKFLOWS ═══════════════════════════════════ -->
+
+<section id="workflow-ceo">
+<h2>CEO / Owner daily workflow</h2>
+
+<div class="callout tip">
+  <strong>Target time: 5 minutes every morning</strong>
+</div>
+
+<ol class="steps">
+  <li><strong>Open the portal</strong> on your phone (home screen icon → logs in automatically with your token).</li>
+  <li><strong>Check the header dot.</strong> Green = all normal. Yellow/Red = read the alerts below.</li>
+  <li><strong>Read the alerts</strong> in order. Top alert is the most critical. Each has a one-line action.</li>
+  <li><strong>Check production tile</strong> — are we on track for the month? If tyres YTD is behind, check with the plant manager.</li>
+  <li><strong>Check stock tile</strong> — any red (stock-out risk)? If yes, contact TFT or KIIC immediately.</li>
+  <li><strong>Tap "Full detail"</strong> if you need to drill into receivables (which dealers owe money), scrap by size, or claims.</li>
+  <li><strong>Check receivables</strong> — any 90+ day accounts? If yes, pause their credit and call for payment plan.</li>
+  <li><strong>Post a notice</strong> if you have a company-wide announcement or priority for the day.</li>
+</ol>
+
+<h3>Weekly review (Mondays)</h3>
+<ul>
+  <li>Review the Scrap Pareto — are the same sizes consistently high-reject?</li>
+  <li>Review open CAPA items — any overdue more than 2 weeks?</li>
+  <li>Review receivables aging — any dealers worsening?</li>
+  <li>Check the trends tab — is production volume trending up or down?</li>
+</ul>
+</section>
+
+<section id="workflow-manager">
+<h2>Manager (Head Office) daily workflow</h2>
+
+<ol class="steps">
+  <li><strong>Morning (8:00–8:15):</strong> Open portal, read alerts. Check stock levels for both plants. Any stock-out risks go to procurement immediately.</li>
+  <li><strong>Check notices:</strong> Read any shift handover notices from last night's plant managers.</li>
+  <li><strong>Production review:</strong> Open Full Detail → Production. Check yesterday's MTD vs plan. If behind, call plant manager.</li>
+  <li><strong>Orders check:</strong> Check receivables section — any new 60+ day accounts? Schedule follow-up.</li>
+  <li><strong>Mid-day:</strong> If any quality issues were flagged (scrap, claims), check CAPA board for owner and due date.</li>
+  <li><strong>End of day:</strong> Post a summary notice for both plants — what happened today, what's the priority for tomorrow.</li>
+</ol>
+</section>
+
+<section id="workflow-plant">
+<h2>Plant Manager daily workflow</h2>
+
+<ol class="steps">
+  <li><strong>Start of shift (7:00):</strong> Read yesterday's handover notice in the Notice Board.</li>
+  <li><strong>Check your plant's production tile</strong> — are we on track for today's plan?</li>
+  <li><strong>Walk the line:</strong> Take whiteboard photo at end of morning shift. Open portal → Capture → Take photo → upload to Drive.</li>
+  <li><strong>Log any downtime:</strong> If a press/machine was stopped, open Capture → Typed entry → Downtime. Fill: machine, minutes, cause.</li>
+  <li><strong>Log quality issues:</strong> If reject count is high, use Capture → 5W1H to record Who / What / When / Where / Why / How.</li>
+  <li><strong>End of shift handover:</strong> Post a Shift Handover notice — output, rejects, machine issues, pending work, priorities for next shift.</li>
+</ol>
+
+<h3>What to capture during the shift</h3>
+<table>
+  <tr><th>Event</th><th>How to capture</th><th>Why</th></tr>
+  <tr><td>Whiteboard updated</td><td>Photo via Capture</td><td>OCR extracts production + reject numbers</td></tr>
+  <tr><td>Machine breakdown</td><td>Typed entry → Downtime</td><td>Feeds OEE Availability calculation</td></tr>
+  <tr><td>Quality hold</td><td>5W1H form</td><td>Creates CAPA action automatically</td></tr>
+  <tr><td>Viber order or delivery</td><td>Viber paste → Save</td><td>Feeds orders + sales tracking</td></tr>
+  <tr><td>Stock shortage noticed</td><td>Typed entry → Stock</td><td>Triggers stock-out alert for CEO</td></tr>
+</table>
+</section>
+
+<section id="workflow-admin">
+<h2>Admin daily workflow</h2>
+
+<ol class="steps">
+  <li><strong>Verify last refresh:</strong> Open admin.html → check "last refresh" timestamp. Should be within 6 hours. If stale, run <code>sync.ps1</code>.</li>
+  <li><strong>Check pipeline health:</strong> Any sources showing error or 0 rows? Common issue: Drive file renamed or moved.</li>
+  <li><strong>Review capture queue:</strong> Any whiteboard photos or Viber texts waiting for OCR? If so, run <code>sync.ps1</code> with ANTHROPIC_API_KEY set.</li>
+  <li><strong>User requests:</strong> New staff joining? Generate their token in admin.html → update PANEL_USERS in Vercel.</li>
+  <li><strong>Galaxy export:</strong> Check if the iStock report has been exported and dropped in Drive (ideally weekly or after each sales period).</li>
+</ol>
+</section>
+
+<!-- ═══════════════════════════════════ DATA PIPELINE ═══════════════════════════════════ -->
+
+<section id="data-pipeline">
+<h2>Data pipeline — how it works</h2>
+
+<p>The data pipeline is what keeps the portal's numbers current. It runs automatically on a schedule and can also be run manually.</p>
+
+<h3>Pipeline stages (in order)</h3>
+<table>
+  <tr><th>Stage</th><th>Script</th><th>What it does</th></tr>
+  <tr><td>Email pull</td><td>build-threads.mjs</td><td>Fetches latest Gmail threads (CEO-scope only)</td></tr>
+  <tr><td>Email extract</td><td>extract.mjs</td><td>Classifies threads → claims, TFT, KIIC, finance</td></tr>
+  <tr><td>Drive pull</td><td>drive-sources.mjs</td><td>Downloads latest workbooks from Google Drive</td></tr>
+  <tr><td>Sites</td><td>sites.mjs</td><td>Extracts per-site stock and production</td></tr>
+  <tr><td>Retailers</td><td>retailers.mjs</td><td>Extracts retailer/dealer database</td></tr>
+  <tr><td>Inventory</td><td>inventory.mjs</td><td>Raw material on-hand + days-to-stockout</td></tr>
+  <tr><td>Stock balance</td><td>stock-balance.mjs</td><td>Galaxy iStock stock ledger</td></tr>
+  <tr><td>Production PCR</td><td>production.mjs</td><td>PCR/Radial line (93k YTD, 23 sizes)</td></tr>
+  <tr><td>Production MC</td><td>production-mc.mjs</td><td>Motorcycle line (156k YTD, 39 sizes)</td></tr>
+  <tr><td>Daily production</td><td>daily-production.mjs</td><td>MTD trend by day</td></tr>
+  <tr><td>Finance</td><td>finance.mjs</td><td>P&L / finance summary (CEO only)</td></tr>
+  <tr><td>Orders</td><td>galaxy-orders.mjs</td><td>Sales orders + receivables aging from Galaxy</td></tr>
+  <tr><td>Whiteboard OCR</td><td>whiteboard-ocr.mjs</td><td>Photo → structured values (needs API key)</td></tr>
+  <tr><td>Viber pull + ingest</td><td>viber-pull + viber-ingest.mjs</td><td>Viber messages → structured records</td></tr>
+  <tr><td>Manual entries</td><td>manual-entries.mjs</td><td>Normalizes all captured records</td></tr>
+  <tr><td>Insights</td><td>insights.mjs</td><td>Cross-module intelligence signals</td></tr>
+  <tr><td>Trends</td><td>trends.mjs</td><td>30-day momentum calculations</td></tr>
+  <tr><td>Quality / OEE</td><td>quality.mjs</td><td>OEE + WCM scorecard</td></tr>
+  <tr><td>Pipeline assemble</td><td>pipeline.mjs</td><td>Assembles all modules → ytf-dashboard.json</td></tr>
+</table>
+
+<h3>How often does it run?</h3>
+<p>Two modes:</p>
+<ul>
+  <li><strong>Manual:</strong> Admin runs <code>sync.ps1</code> on the office PC. Pulls fresh data, rebuilds all stages, deploys to Vercel. Takes ~3–5 minutes.</li>
+  <li><strong>Automatic (GitHub Action):</strong> If configured, runs on a schedule (e.g. 6 AM + 6 PM daily). Requires the service account key and Anthropic key as GitHub secrets.</li>
+</ul>
+
+<h3>Why might data be stale?</h3>
+<table>
+  <tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+  <tr><td>Numbers haven't changed in days</td><td>Sync not run; or source file not updated</td><td>Run <code>sync.ps1</code>; check Drive folder for new files</td></tr>
+  <tr><td>Production shows 0 or N/A</td><td>Annual workbook tab name changed</td><td>Check Drive → tell admin</td></tr>
+  <tr><td>Galaxy orders not showing</td><td>Export file not in Drive yet</td><td>Export from iStock → drop in Galaxy folder → run sync</td></tr>
+  <tr><td>Whiteboard photos not appearing</td><td>ANTHROPIC_API_KEY not set in env</td><td>Admin: set key in Vercel env vars or sync.ps1</td></tr>
+  <tr><td>Email data missing (CEO)</td><td>Gmail OAuth token expired</td><td>Admin: re-authenticate Gmail connector</td></tr>
+</table>
+</section>
+
+<!-- ═══════════════════════════════════ ALERTS GUIDE ═══════════════════════════════════ -->
+
+<section id="alerts-guide">
+<h2>Alert meanings &amp; what to do</h2>
+
+<table>
+  <tr>
+    <th>Alert text</th>
+    <th>Means</th>
+    <th>Who acts</th>
+    <th>Action</th>
+  </tr>
+  <tr>
+    <td>[Material] — ~N day(s) to stockout</td>
+    <td>N ≤ 7: critical. N ≤ 21: warning.</td>
+    <td>CEO / Manager</td>
+    <td>Contact TFT (Thailand) or KIIC immediately for emergency PO</td>
+  </tr>
+  <tr>
+    <td>Overdue receivables: X dealers 60+ days</td>
+    <td>Multiple dealers past due payment</td>
+    <td>CEO / Manager</td>
+    <td>Call each dealer; pause credit for 90+ accounts</td>
+  </tr>
+  <tr>
+    <td>High scrap rate: [size] at X%</td>
+    <td>Reject rate exceeds 5% for that size</td>
+    <td>Plant Manager / Quality</td>
+    <td>Review press settings, compound batch, mould condition; raise CAPA</td>
+  </tr>
+  <tr>
+    <td>Open CAPA: N items overdue</td>
+    <td>Actions past their due date</td>
+    <td>Manager / Owner named</td>
+    <td>Check CAPA board → chase owner or re-assign</td>
+  </tr>
+  <tr>
+    <td>Production behind plan: X% of target</td>
+    <td>MTD output below 90% of monthly target</td>
+    <td>Plant Manager / CEO</td>
+    <td>Review line schedule, check for downtime patterns, discuss plan adjustment</td>
+  </tr>
+  <tr>
+    <td>Claims spike: N claims this month</td>
+    <td>Claim count up &gt;20% vs prior period</td>
+    <td>Quality / CEO</td>
+    <td>Review claim types and sizes; check if from specific batch or dealer</td>
+  </tr>
+  <tr>
+    <td>Data stale: last refresh Xh ago</td>
+    <td>Sync hasn't run in &gt;24h</td>
+    <td>Admin</td>
+    <td>Run <code>sync.ps1</code>; check for errors in the output</td>
+  </tr>
+</table>
+</section>
+
+<!-- ═══════════════════════════════════ SETUP USERS ═══════════════════════════════════ -->
+
+<section id="setup-users">
+<h2>Setting up users</h2>
+
+<p>User access is controlled by the <code>PANEL_USERS</code> environment variable in Vercel. This is a JSON object where each key is a token (passcode) and the value contains the role and group assignments.</p>
+
+<h3>PANEL_USERS format</h3>
+<pre>{
+  "tok_abc123": { "role": "ceo",           "groups": ["*"],          "name": "U Ko Ko" },
+  "tok_def456": { "role": "manager",       "groups": ["plant-a","plant-b","head-office"], "name": "Mg Mg" },
+  "tok_ghi789": { "role": "plant_manager", "groups": ["plant-a"],    "name": "Ko Aung" },
+  "tok_jkl012": { "role": "plant_manager", "groups": ["plant-b"],    "name": "Ma Hla" }
+}</pre>
+
+<h3>Adding a new user (step by step)</h3>
+<ol class="steps">
+  <li>Open <code>admin.html</code> → Users section.</li>
+  <li>Add the user's role, name, and groups. The console generates a secure token.</li>
+  <li>Copy the updated PANEL_USERS JSON.</li>
+  <li>Go to <a href="https://vercel.com" target="_blank" rel="noopener">vercel.com</a> → your project (supermega-remote) → Settings → Environment Variables.</li>
+  <li>Update or add <code>PANEL_USERS</code> with the new JSON value.</li>
+  <li>Redeploy (Settings → Deployments → Redeploy latest).</li>
+  <li>Send the new user their token — they enter it on the login screen.</li>
+</ol>
+
+<h3>Removing a user</h3>
+<p>Delete their token from <code>PANEL_USERS</code> → update in Vercel → redeploy. Their passcode immediately stops working.</p>
+
+<h3>Changing a role</h3>
+<p>Edit the <code>"role"</code> field in their token's entry in <code>PANEL_USERS</code> → update Vercel → redeploy. The user logs in with the same passcode but now sees a different data scope.</p>
+</section>
+
+<!-- ═══════════════════════════════════ SETUP ISTOCK ═══════════════════════════════════ -->
+
+<section id="setup-istock">
+<h2>Connecting Galaxy iStock</h2>
+
+<p>Galaxy iStock has no public API — it runs on a local Windows server with a SQL Server database. There are three ways to get data out:</p>
+
+<div class="section-card">
+  <h4>Option 1: Manual export (recommended to start)</h4>
+  <ol class="steps">
+    <li>In Galaxy iStock: run <strong>Sales Register</strong> report → Export to Excel.</li>
+    <li>Run <strong>Outstanding Receivables</strong> report → Export to Excel.</li>
+    <li>Drop both files into the shared Google Drive folder called <strong>"Galaxy export"</strong>.</li>
+    <li>Run <code>sync.ps1</code> — the adapter finds the files automatically by name pattern.</li>
+    <li>Portal shows updated orders and receivables.</li>
+  </ol>
+  <p style="font-size:12.5px;color:var(--muted)">Recommended frequency: weekly, or after each major sales period.</p>
+</div>
+
+<div class="section-card">
+  <h4>Option 2: Scheduled SQL export (automatic)</h4>
+  <p>If you can give admin a read-only login to the Galaxy SQL Server, a connector script (<code>galaxy-sql.mjs</code>) can pull data automatically on each refresh — no manual export needed. Contact admin to set this up. What you need:</p>
+  <ul>
+    <li>The SQL Server hostname or IP (accessible on LAN or via VPN)</li>
+    <li>A read-only SQL login (not the Galaxy admin password)</li>
+    <li>The Galaxy database name</li>
+  </ul>
+</div>
+
+<div class="section-card">
+  <h4>Option 3: ODBC view (durable)</h4>
+  <p>A database administrator creates read-only SQL views over the sales, receivables, and stock tables, then exposes them via ODBC. Most stable long-term — contact the Galaxy support or your IT team to set up.</p>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════ SETUP VIBER ═══════════════════════════════════ -->
+
+<section id="setup-viber">
+<h2>Viber integration</h2>
+
+<h3>How it works today</h3>
+<p>The team copies Viber messages from the group chat and pastes them into the portal's Capture screen. The AI extracts structured data (orders, payments, deliveries, stock info) from the pasted text and adds it to the relevant module.</p>
+
+<h3>Paste workflow (manual, available now)</h3>
+<ol class="steps">
+  <li>Open <strong>Viber Desktop</strong> on the office PC.</li>
+  <li>Select the messages you want to record from the group chat.</li>
+  <li>Copy (Ctrl+C).</li>
+  <li>Open the portal → <strong>Capture</strong> → <strong>Viber paste</strong> tab.</li>
+  <li>Select the group from the dropdown.</li>
+  <li>Paste the text.</li>
+  <li>Tap <strong>Save</strong>. Messages are processed on the next refresh.</li>
+</ol>
+
+<h3>Viber bot webhook (automatic — production path)</h3>
+<p>For fully automatic Viber integration, a Viber bot can be set up to receive group messages and send them to the portal automatically. This requires:</p>
+<ul>
+  <li>A <strong>Viber bot auth token</strong> from the Viber developer console</li>
+  <li>The token stored as <code>YTF_VIBER_AUTH_TOKEN</code> in Vercel</li>
+  <li>The portal deployed with the webhook endpoint active</li>
+</ul>
+<p>Contact admin to set this up. Once configured, Viber messages are processed automatically without any manual copying.</p>
+
+<h3>Supported record types</h3>
+<table>
+  <tr><th>Record type</th><th>Example Viber message</th><th>What gets extracted</th></tr>
+  <tr><td>Order</td><td>"Send 50 pcs 195/85 R16 to U Bo Gyi"</td><td>Dealer, size, qty, type=order</td></tr>
+  <tr><td>Payment</td><td>"U Aung paid 2.5M for March invoice"</td><td>Dealer, amount, type=payment</td></tr>
+  <tr><td>Delivery</td><td>"Truck left Plant A with 120 pcs"</td><td>Qty, source, type=delivery</td></tr>
+  <tr><td>Stock</td><td>"Polyester cord arrived, 5 rolls"</td><td>Material, qty, type=stock</td></tr>
+  <tr><td>Complaint</td><td>"Dealer says 175/70 has cracking issue"</td><td>Product, issue, type=complaint</td></tr>
+</table>
+</section>
+
+<!-- ═══════════════════════════════════ TROUBLESHOOT ═══════════════════════════════════ -->
+
+<section id="troubleshoot">
+<h2>Troubleshooting</h2>
+
+<table>
+  <tr><th>Problem</th><th>What to check</th><th>Fix</th></tr>
+  <tr>
+    <td>Can't log in — says "Access denied"</td>
+    <td>Wrong token, or token revoked</td>
+    <td>Ask admin to confirm your token in PANEL_USERS</td>
+  </tr>
+  <tr>
+    <td>Portal shows "Loading…" indefinitely</td>
+    <td>Network issue or deployment error</td>
+    <td>Check internet connection; try refreshing; ask admin if persistent</td>
+  </tr>
+  <tr>
+    <td>Numbers haven't changed in 2+ days</td>
+    <td>Sync not running</td>
+    <td>Admin: run <code>sync.ps1</code>; check for errors</td>
+  </tr>
+  <tr>
+    <td>Production shows 0</td>
+    <td>Drive workbook tab renamed or moved</td>
+    <td>Check the annual production file in Drive; notify admin</td>
+  </tr>
+  <tr>
+    <td>No orders in receivables</td>
+    <td>Galaxy export file not in Drive</td>
+    <td>Export from Galaxy iStock → drop in Drive Galaxy folder → sync</td>
+  </tr>
+  <tr>
+    <td>Whiteboard OCR not working</td>
+    <td>ANTHROPIC_API_KEY not set</td>
+    <td>Admin: add key to Vercel env vars; or set in sync.ps1 .env path</td>
+  </tr>
+  <tr>
+    <td>CEO can't see claims / finance</td>
+    <td>Gmail OAuth expired</td>
+    <td>Admin: re-authenticate Gmail connector in ytf-ops-tools</td>
+  </tr>
+  <tr>
+    <td>Dark mode not applying</td>
+    <td>Theme saved in localStorage</td>
+    <td>Toggle theme button in header; clear browser cache if stuck</td>
+  </tr>
+  <tr>
+    <td>"Section could not render — [error]"</td>
+    <td>One data module has a parsing error</td>
+    <td>Note the error text; ask admin to check the relevant .mjs output file</td>
+  </tr>
+  <tr>
+    <td>Viber paste not saving</td>
+    <td>Vercel Blob not provisioned</td>
+    <td>Admin: provision Vercel Blob storage; until then, downloads to local file</td>
+  </tr>
+</table>
+
+<h3>Emergency contacts</h3>
+<div class="section-card">
+  <p><strong>Technical issues with the portal:</strong> Contact swanhtet@supermega.dev</p>
+  <p><strong>Galaxy iStock issues:</strong> Contact Galaxy support or your IT team</p>
+  <p><strong>Google Drive access:</strong> Contact the service account admin (swanhtet@supermega.dev)</p>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════ GLOSSARY ═══════════════════════════════════ -->
+
+<section id="glossary">
+<h2>Glossary</h2>
+
+<table>
+  <tr><th>Term</th><th>Meaning</th></tr>
+  <tr><td>OEE</td><td>Overall Equipment Effectiveness — A × P × Q. Industry standard for measuring manufacturing productivity.</td></tr>
+  <tr><td>CAPA</td><td>Corrective Action and Preventive Action. A formal process for identifying root cause of defects and preventing recurrence.</td></tr>
+  <tr><td>PCR</td><td>Passenger Car Radial — the radial tyre production line at Plant A.</td></tr>
+  <tr><td>MC</td><td>Motorcycle — the motorcycle tyre production line.</td></tr>
+  <tr><td>TFT</td><td>Thai company (Thailand) — the main raw material supplier for rubber compounds and polyester cord.</td></tr>
+  <tr><td>KIIC</td><td>Korea-based material supplier for steel cord and other compounds.</td></tr>
+  <tr><td>YTD</td><td>Year to date — total from January 1 to today.</td></tr>
+  <tr><td>MTD</td><td>Month to date — total from the 1st of this month to today.</td></tr>
+  <tr><td>5W1H</td><td>Who, What, When, Where, Why, How — a structured format for recording abnormalities and incidents.</td></tr>
+  <tr><td>WCM</td><td>World Class Manufacturing — a methodology for operational excellence. YTF maps its quality metrics to WCM pillars.</td></tr>
+  <tr><td>IATF 16949</td><td>International quality management standard for automotive production.</td></tr>
+  <tr><td>Galaxy iStock</td><td>The inventory and accounting software used at YTF showrooms and head office.</td></tr>
+  <tr><td>PWA</td><td>Progressive Web App — the portal installs on your phone home screen and works like a native app.</td></tr>
+  <tr><td>PANEL_USERS</td><td>The Vercel environment variable that stores all user tokens, roles, and group assignments.</td></tr>
+  <tr><td>Drive service account</td><td>A Google service account (a robot Google account) that the portal uses to read Drive files automatically, without anyone being logged in.</td></tr>
+  <tr><td>Viber bot webhook</td><td>A system where Viber sends group messages to the portal automatically when the bot is added to the group.</td></tr>
+  <tr><td>Aging bucket</td><td>A category for how old a receivable is: 0–30 / 31–60 / 61–90 / 90+ days.</td></tr>
+  <tr><td>Scrap Pareto</td><td>A ranking of tyre sizes by their reject rate, used to find the worst quality issues first.</td></tr>
+  <tr><td>Days-to-stockout</td><td>Estimated number of days until a raw material runs out, based on current stock and average daily consumption.</td></tr>
+  <tr><td>Insight / Signal</td><td>An automatically generated alert based on cross-module analysis (e.g. stock-out risk detected by comparing inventory vs consumption).</td></tr>
+</table>
+
+<div style="margin-top:40px;padding:20px;background:var(--panel);border:1px solid var(--line);border-radius:12px;font-size:13px;color:var(--muted)">
+  <strong style="color:var(--txt)">Yangon Tyre Operations Portal</strong> — built by SuperMega for Yangon Tyre Factory.<br>
+  Questions or corrections: swanhtet@supermega.dev · <a href="/index.html">Back to portal</a>
+</div>
+</section>
+
+</main>
+</div>
+
+<script>
+// Active nav link based on scroll
+const links = document.querySelectorAll('nav.sidebar a[href^="#"]');
+const sections = [...document.querySelectorAll('section[id]')];
+let ticking = false;
+function updateActive(){
+  const y = window.scrollY + 80;
+  let current = sections[0];
+  for(const s of sections){ if(s.offsetTop <= y) current = s; }
+  for(const l of links){
+    l.classList.toggle('active', l.getAttribute('href') === '#'+current.id);
+  }
+}
+document.addEventListener('scroll',()=>{ if(!ticking){ ticking=true; requestAnimationFrame(()=>{ updateActive(); ticking=false; }); }},{passive:true});
+updateActive();
+
+// Dark mode — inherit from localStorage if set
+const saved = localStorage.getItem('ytf-theme');
+if(saved) document.documentElement.setAttribute('data-theme', saved);
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "supermega-remote",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Mobile control panel + structured-data proxy for the SuperMega / YTF pipeline.",
+  "engines": { "node": ">=18" }
+}

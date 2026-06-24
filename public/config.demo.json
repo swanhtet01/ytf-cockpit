@@ -1,0 +1,38 @@
+{
+  "_comment": "PUBLIC demo tenant — synthetic data only. Deployed at demo.supermega.dev (passcode: demo).",
+  "brand": "Northwind Tyres",
+  "instance": "Northwind Tyres",
+  "tagline": "demo operations cockpit",
+  "accent": "#D97757",
+  "vertical": "tyre-manufacturing",
+  "footer": "Demo · Powered by SuperMega",
+  "feed_prefix": "demo",
+  "monogram": "NT",
+  "search_placeholder": "Search materials, claims, sizes, stock… (demo)",
+  "search_chips": [
+    "carbon",
+    "reorder",
+    "radial",
+    "rejected",
+    "low"
+  ],
+  "modules": {
+    "intelligence": true,
+    "trends": true,
+    "financials": true,
+    "production_mtd": true,
+    "production_fg": true,
+    "production_mc": true,
+    "production": true,
+    "inventory": true,
+    "stock_balance": true,
+    "distribution": true,
+    "claims": true,
+    "procurement": true,
+    "raw_material": true,
+    "parties": true,
+    "sites": true,
+    "quality_wcm": true,
+    "data_sources": false
+  }
+}

@@ -1,0 +1,59 @@
+name: Refresh YTF ops cockpit
+
+on:
+  schedule:
+    - cron: '30 0 * * *'   # 00:30 UTC = 07:00 Myanmar (MMT = UTC+6:30)
+    - cron: '30 11 * * *'  # 11:30 UTC = 18:00 Myanmar
+  workflow_dispatch: {}     # "Run workflow" button for on-demand refresh
+
+concurrency:
+  group: refresh-cockpit
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Restore Drive cache
+        uses: actions/cache@v4
+        with:
+          path: ytf-ops-tools/data/drive-cache
+          key: drive-cache-${{ github.run_id }}
+          restore-keys: drive-cache-
+
+      - name: Pull latest Drive workbooks (service account)
+        working-directory: ytf-ops-tools
+        env:
+          GOOGLE_SA_KEY: ${{ secrets.GOOGLE_SA_KEY }}
+        run: |
+          mkdir -p data/drive-cache data/raw out
+          node pull-drive.mjs
+
+      - name: Rebuild the private feed
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          mkdir -p feed
+          node refresh.mjs --no-llm
+
+      - name: Deploy to Vercel (production)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          URL=$(npx --yes vercel@latest deploy --prod --yes \
+            --token "$VERCEL_TOKEN" \
+            --scope swanhtet01s-projects \
+            2>&1 | grep -oE 'https://supermega-remote-[a-z0-9]+-swanhtet01s-projects\.vercel\.app' | head -1)
+          echo "Deployed: $URL"
+          if [ -n "$URL" ]; then
+            npx --yes vercel@latest alias set "$URL" ops.supermega.dev \
+              --token "$VERCEL_TOKEN" \
+              --scope swanhtet01s-projects || true
+          fi

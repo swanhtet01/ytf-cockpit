@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#1B1815" />
+<title>SuperMega Ops — your operation, live on your phone</title>
+<meta name="description" content="Turn the spreadsheets, email, and software you already use into one live, secure operations cockpit — in a day, no ERP migration." />
+<link rel="icon" href="/icon.svg" />
+<link rel="apple-touch-icon" href="/icon.svg" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="SuperMega" />
+<meta property="og:title" content="SuperMega Ops — your operation, live on your phone" />
+<meta property="og:description" content="Turn the spreadsheets, email, and software you already use into one live, secure operations cockpit — in a day, no ERP migration." />
+<meta property="og:url" content="https://ops.supermega.dev/product.html" />
+<meta property="og:image" content="https://ops.supermega.dev/icon.svg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="SuperMega Ops — your operation, live on your phone" />
+<meta name="twitter:description" content="Spreadsheets + email → one live, secure ops cockpit. In a day, no ERP migration." />
+<meta name="twitter:image" content="https://ops.supermega.dev/icon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:wght@400..700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#1B1815; --paper:#242019; --paper2:#2B261E; --line:rgba(243,239,230,0.10);
+    --ink:#F3EFE6; --muted:#A8A092; --accent:#D97757; --accent2:#C2603F; --gilt:#C9A24B;
+    --ok:#5BA46F; --warn:#E8A23D; --bad:#E0604E; --serif:"Fraunces",Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.6}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px}
+  h1,h2,h3{font-family:var(--serif);font-weight:560;letter-spacing:-.02em;line-height:1.12;margin:0}
+  a{color:var(--accent);text-decoration:none}
+  .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600}
+  .btn{display:inline-block;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;
+    font-weight:650;padding:13px 22px;border-radius:12px;font-size:15px}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  header.nav{display:flex;align-items:center;gap:12px;padding:18px 0}
+  .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:grid;place-items:center;font-weight:800;color:#fff;font-family:var(--serif)}
+  .nav .sp{flex:1}
+  /* hero */
+  .hero{padding:46px 0 30px}
+  .hero h1{font-size:46px;max-width:14ch}
+  .hero p.lead{font-size:19px;color:var(--muted);max-width:54ch;margin:18px 0 26px}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap}
+  /* sections */
+  section{padding:34px 0;border-top:1px solid var(--line)}
+  .grid{display:grid;gap:16px}
+  .feat{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px}
+  .card h3{font-size:17px;margin-bottom:7px}
+  .card p{color:var(--muted);font-size:14px;margin:0}
+  .card .ic{font-size:20px;color:var(--accent);margin-bottom:8px}
+  .flow{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-items:stretch}
+  .flow .card{text-align:center}
+  /* mock cockpit */
+  .mock{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:16px;max-width:430px;margin:0 auto}
+  .mhead{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+  .mhead .logo{width:30px;height:30px;font-size:13px}
+  .mhead .t{font-family:var(--serif);font-weight:560;font-size:15px}
+  .mhead .sub{font-size:10.5px;color:var(--muted)}
+  .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .tile{background:var(--paper2);border:1px solid var(--line);border-radius:11px;padding:10px 11px}
+  .tile .k{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .tile .v{font-size:17px;font-weight:750;margin-top:3px}
+  .alert{background:var(--paper2);border:1px solid var(--warn);border-radius:10px;padding:9px 11px;margin-top:8px;font-size:12.5px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-right:6px;vertical-align:1px}
+  .twocol{display:grid;grid-template-columns:1.05fr .95fr;gap:30px;align-items:center}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
+  .stat .n{font-family:var(--serif);font-size:30px;font-weight:560;color:var(--accent)}
+  .stat .l{font-size:12.5px;color:var(--muted)}
+  ul.checks{list-style:none;padding:0;margin:14px 0 0}
+  ul.checks li{padding:6px 0 6px 26px;position:relative;color:var(--ink);font-size:15px}
+  ul.checks li::before{content:"";position:absolute;left:0;top:11px;width:10px;height:10px;border:2px solid var(--accent);border-radius:50%}
+  footer{padding:30px 0 50px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+  @media (max-width:760px){ .hero h1{font-size:34px} .twocol{grid-template-columns:1fr} .stats{grid-template-columns:1fr 1fr} }
+  @media (max-width:380px){ .stats{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="nav">
+    <div class="logo" style="background:none"><img src="/icon.svg" alt="SuperMega" style="width:100%;height:100%;display:block" /></div>
+    <strong style="font-family:var(--serif)">SuperMega</strong>
+    <span class="sp"></span>
+    <a href="https://supermega.dev" class="btn ghost" style="padding:9px 15px;font-size:13px">supermega.dev</a>
+  </header>
+
+  <section class="hero" style="border-top:none">
+    <div class="eyebrow">SuperMega Ops</div>
+    <h1>Your whole operation, live on your phone.</h1>
+    <p class="lead">Turn the spreadsheets, email, and software you already use into one live, secure
+      operations cockpit — stock-out alerts, production, claims, procurement, P&amp;L — in a day,
+      with no ERP migration.</p>
+    <div class="cta-row">
+      <a href="#demo" class="btn">See a live demo</a>
+      <a href="#how" class="btn ghost">How it works</a>
+    </div>
+    <div class="stats" style="max-width:560px;margin-top:30px">
+      <div class="stat"><div class="n">1 day</div><div class="l">to stand up a tenant</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">data entry — reads your sources</div></div>
+      <div class="stat"><div class="n">No&nbsp;AI keys</div><div class="l">deterministic &amp; private</div></div>
+    </div>
+  </section>
+
+  <section id="demo">
+    <div class="twocol">
+      <div>
+        <div class="eyebrow">The cockpit</div>
+        <h2 style="font-size:27px;margin:8px 0 12px">One screen for what's actually happening.</h2>
+        <p style="color:var(--muted);font-size:15px">Headline tiles and operational alerts on open;
+          deep ledgers a tap away — inventory with months-of-cover, production by line and grade,
+          procurement, warranty claims, distribution, quality. Plus a no-AI search across all of it.</p>
+        <ul class="checks">
+          <li>Days-to-stockout intelligence across every material</li>
+          <li>Production by line &amp; grade — including the lines other reports miss</li>
+          <li>Private &amp; token-gated — data never leaves the tenant</li>
+          <li>Installs to the home screen as an app (PWA)</li>
+        </ul>
+      </div>
+      <div class="mock" aria-label="Cockpit preview">
+        <div class="mhead">
+          <div class="logo">SM</div>
+          <div><div class="t">Factory Ops</div><div class="sub">live · updated today</div></div>
+        </div>
+        <div class="tiles">
+          <div class="tile"><div class="k">Tyres produced</div><div class="v">405,216</div></div>
+          <div class="tile"><div class="k">Stock</div><div class="v">86 mat · 34 low</div></div>
+          <div class="tile"><div class="k">Claims</div><div class="v">120 · 83% ✓</div></div>
+          <div class="tile"><div class="k">Procurement</div><div class="v">201 · TFT(237)</div></div>
+        </div>
+        <div class="alert"><span class="dot"></span>Premium diesel — ~1 day to stockout</div>
+        <div class="alert"><span class="dot"></span>Polyester cord — ~3 days to stockout</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="eyebrow">How it works</div>
+    <h2 style="font-size:27px;margin:8px 0 18px">Your sources in. A cockpit out.</h2>
+    <div class="grid flow">
+      <div class="card"><div class="ic">📂</div><h3>Google Drive</h3><p>Monthly production, stock balance, P&amp;L workbooks — read automatically.</p></div>
+      <div class="card"><div class="ic">✉️</div><h3>Gmail</h3><p>Warranty claims, procurement (TFT), raw-material shipments — classified.</p></div>
+      <div class="card"><div class="ic">💬</div><h3>Viber &amp; more</h3><p>Dealer orders &amp; payments via a computer-use bridge. Galaxy / SQL exports.</p></div>
+      <div class="card" style="border-color:var(--accent)"><div class="ic">📱</div><h3>The cockpit</h3><p>Live tiles, alerts, ledgers, search — on every phone, private to you.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Built in</div>
+    <h2 style="font-size:27px;margin:8px 0 18px">Everything an operator needs — nothing they don't.</h2>
+    <div class="grid feat">
+      <div class="card"><div class="ic">📦</div><h3>Inventory &amp; reorder</h3><p>On-hand + in-transit, months-of-cover, reorder flags — auto-fed from supplier email.</p></div>
+      <div class="card"><div class="ic">🏭</div><h3>Production</h3><p>By size, line, and grade (A/B/R); month-to-date vs target; the full output, every line.</p></div>
+      <div class="card"><div class="ic">🧠</div><h3>Intelligence</h3><p>Cross-module signals: days-to-stockout, projections, momentum — ranked by severity.</p></div>
+      <div class="card"><div class="ic">🛡️</div><h3>Quality / WCM</h3><p>OEE, FPY, warranty DPPM, CAPA — mapped to ISO 9001 / IATF 16949.</p></div>
+      <div class="card"><div class="ic">🔎</div><h3>No-AI search</h3><p>Instant client-side search across every ledger. No LLM, no API key, no data leaving.</p></div>
+      <div class="card"><div class="ic">🎨</div><h3>White-label</h3><p>Your brand, colour, logo, and modules from one config — a new tenant in minutes.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="twocol">
+      <div>
+        <div class="eyebrow">For your business</div>
+        <h2 style="font-size:25px;margin:8px 0 12px">Sits on top of what you already run.</h2>
+        <p style="color:var(--muted);font-size:15px">No rip-and-replace. Keep your spreadsheets, your
+          email, your Galaxy iStock. SuperMega Ops becomes the live layer over all of it — per-tenant,
+          private, and yours. Any manufacturer, distributor, or retailer with inventory + sales +
+          purchasing can run it.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:17px;margin-bottom:10px">Get a cockpit for your business</h3>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:14px">We connect your sources, brand it, and hand you the URL + passcode.</p>
+        <a href="mailto:swanhtet@supermega.dev?subject=SuperMega%20Ops" class="btn" style="width:100%;text-align:center">Talk to us</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <strong style="font-family:var(--serif);color:var(--ink)">SuperMega Ops</strong> — operations intelligence by SuperMega.
+    Shown above: a tyre-factory tenant. Cast real work into software.
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "Yangon Tyre — Operations",
+  "short_name": "Yangon Tyre",
+  "description": "Yangon Tyre factory operations cockpit — production, stock, claims, procurement, quality. Powered by SuperMega.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F4F6F9",
+  "theme_color": "#0755a5",
+  "icons": [
+    { "src": "/ytf-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/ytf-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

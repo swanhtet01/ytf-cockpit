@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0755a5" />
+<title>SuperMega Ops — Admin</title>
+<link rel="icon" href="/ytf-mark.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:wght@400..700&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#F4F6F9;--panel:#FFFFFF;--panel2:#EEF2F7;--line:rgba(7,85,165,0.14);--txt:#11233A;--muted:#566576;--accent:#0755a5;--accent2:#ec1c2e;--ok:#16823F;--warn:#B25A0C;--bad:#ec1c2e;--chip:#EAF0F7;--serif:"Fraunces",Georgia,serif;}
+  :root[data-theme="dark"]{--bg:#0B1622;--panel:#122236;--panel2:#0E1C2C;--line:rgba(220,235,255,0.10);--txt:#EAF1F9;--muted:#90A2B6;--accent:#3F90E0;--accent2:#FF5A6A;--ok:#5BA46F;--warn:#E8A23D;--bad:#FF5A6A;--chip:#122236;}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--txt);font-family:"Inter",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.55}
+  .wrap{max-width:760px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px 48px}
+  header{display:flex;align-items:center;gap:11px;margin:6px 0 16px}
+  header .logo{width:34px;height:34px}.logo img{width:100%;height:100%;display:block}
+  h1{font-family:var(--serif);font-weight:560;font-size:20px;margin:0;letter-spacing:-.02em}
+  h2{font-family:var(--serif);font-weight:560;font-size:15px;margin:0 0 10px}
+  .sub{font-size:11px;color:var(--muted)}
+  .spacer{flex:1}
+  a{color:var(--accent);text-decoration:none}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+  .tile{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:11px}
+  .tile .k{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .tile .v{font-size:16px;font-weight:700;margin-top:3px}
+  label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px}
+  input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:11px;border-radius:10px;font-size:15px;outline:none;font-family:inherit}
+  input:focus{border-color:var(--accent)}
+  .row{display:flex;gap:10px;flex-wrap:wrap}.row>div{flex:1;min-width:130px}
+  .mods{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+  .chip{font-size:12px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);cursor:pointer;user-select:none}
+  .chip.on{background:color-mix(in srgb,var(--accent) 14%,var(--panel));border-color:var(--accent);color:var(--accent)}
+  button.act{background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;color:#fff;font-weight:650;padding:12px 18px;border-radius:11px;font-size:14px;font-family:inherit;cursor:pointer;margin-top:14px}
+  button.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--txt);font-weight:600;padding:12px 16px;border-radius:11px;font-size:14px;font-family:inherit;cursor:pointer;margin-top:14px}
+  pre{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:12px;overflow:auto;font-size:11.5px;color:var(--txt);max-height:36vh;margin:12px 0 0}
+  .links{display:flex;flex-wrap:wrap;gap:9px}
+  .links a{background:var(--panel2);border:1px solid var(--line);padding:10px 14px;border-radius:11px;font-size:13.5px;font-weight:600}
+  .pill{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700}
+  .pill.ok{background:color-mix(in srgb,var(--ok) 14%,var(--panel));color:var(--ok)}.pill.bad{background:color-mix(in srgb,var(--bad) 14%,var(--panel));color:var(--bad)}.pill.warn{background:color-mix(in srgb,var(--warn) 16%,var(--panel));color:var(--warn)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><img src="/ytf-mark.svg" alt="Yangon Tyre" /></div>
+    <div><h1>Ops Admin</h1><div class="sub" id="sub">meta &amp; tenant console</div></div>
+    <span class="spacer"></span>
+    <a href="/index.html" style="font-size:13px">← Panel</a>
+  </header>
+
+  <div class="card">
+    <h2>Health &amp; meta</h2>
+    <div class="grid" id="health"><div class="tile"><div class="k">status</div><div class="v" id="hStatus">…</div></div></div>
+    <div class="sub" id="meta" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <h2>Surfaces</h2>
+    <div class="links">
+      <a href="/index.html">Control panel</a>
+      <a href="/ops.html">Ops cockpit</a>
+      <a href="/entry.html">Data entry</a>
+      <a href="/product.html">Product page</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>New tenant / branding</h2>
+    <div class="sub">Generate a white-label <code>config.json</code> for a new client. Mirrors <code>new-client.mjs</code>.</div>
+    <div class="row">
+      <div><label>Brand / client name</label><input id="fName" value="Acme Tyres" /></div>
+      <div><label>Feed prefix (a–z0–9)</label><input id="fPrefix" value="acme" /></div>
+    </div>
+    <div class="row">
+      <div><label>Accent (hex)</label><input id="fAccent" value="#D97757" /></div>
+      <div><label>Monogram</label><input id="fMono" value="AT" /></div>
+    </div>
+    <label>Modules (tap to toggle)</label>
+    <div class="mods" id="mods"></div>
+    <div class="row">
+      <button class="act" id="gen">Generate config.json</button>
+      <button class="ghost" id="dl">Download</button>
+      <button class="ghost" id="copy">Copy</button>
+    </div>
+    <pre id="out">{ }</pre>
+    <div class="sub">Deploy: fork the cockpit → use this as <code>public/config.json</code> → set Vercel env <code>PANEL_TOKEN</code> + <code>FEED_PREFIX</code> (= prefix) → <code>node pull-drive.mjs &amp;&amp; node refresh.mjs</code> → deploy → alias <code>&lt;prefix&gt;.yourdomain</code>.</div>
+  </div>
+
+  <div class="card">
+    <h2>Users &amp; roles (access)</h2>
+    <div class="sub">Generate the <code>PANEL_USERS</code> env value. Each role = one passcode. <b>CEO</b> sees everything incl. <b>email</b>-sourced data (claims/procurement/raw-material); other roles never do. <b>Viber</b> data is scoped to the <b>groups</b> a role lists (use <code>*</code> for all). Job triggers: admin=all (no email), CEO=all, manager=pipeline+insight, plant_manager=pipeline.</div>
+    <div id="roleRows"></div>
+    <div class="row">
+      <button class="act" id="genUsers">Generate PANEL_USERS</button>
+      <button class="ghost" id="copyUsers">Copy</button>
+    </div>
+    <pre id="usersOut">{ }</pre>
+    <div class="sub">Set this as the Vercel env var <code>PANEL_USERS</code> (Production), then redeploy. Leaving it unset keeps a single CEO passcode (<code>PANEL_TOKEN</code>).</div>
+  </div>
+</div>
+
+<script>
+const $ = (id)=>document.getElementById(id);
+const TOKEN = localStorage.getItem('sm_remote_token') || '';
+const MODULES = ['intelligence','trends','financials','production_mtd','production_fg','production_mc','production','inventory','stock_balance','distribution','claims','procurement','raw_material','parties','sites','quality_wcm','data_sources'];
+const state = Object.fromEntries(MODULES.map(m=>[m,true]));
+
+// ---- module chips ----
+$('mods').innerHTML = MODULES.map(m=>`<span class="chip on" data-m="${m}">${m}</span>`).join('');
+document.querySelectorAll('#mods .chip').forEach(c=>c.onclick=()=>{ const m=c.dataset.m; state[m]=!state[m]; c.classList.toggle('on', state[m]); });
+
+function autoMono(name){ const p=name.trim().split(/\s+/); return ((p[0]||'S')[0]+((p[1]||'')[0]||(p[0]||'M')[1]||'M')).toUpperCase(); }
+$('fName').addEventListener('input', ()=>{ $('fMono').value = autoMono($('fName').value); $('fPrefix').value = $('fName').value.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,8); });
+
+function buildConfig(){
+  const prefix = ($('fPrefix').value||'tenant').replace(/[^a-z0-9-]/g,'');
+  return {
+    _comment: `White-label config for ${$('fName').value}. feed_prefix MUST match server FEED_PREFIX env.`,
+    brand: $('fName').value, instance: $('fName').value, tagline: 'operations cockpit',
+    accent: $('fAccent').value || '#D97757', vertical: 'operations',
+    footer: 'Powered by SuperMega', feed_prefix: prefix,
+    monogram: ($('fMono').value||'SM').slice(0,2).toUpperCase(),
+    search_placeholder: 'Search inventory, orders, claims, stock, actions…',
+    search_chips: ['stock','reorder','order','claim','low','today'],
+    modules: {...state},
+  };
+}
+let lastJson = '{ }';
+$('gen').onclick = ()=>{ lastJson = JSON.stringify(buildConfig(), null, 2); $('out').textContent = lastJson; };
+$('dl').onclick = ()=>{ if(lastJson==='{ }')$('gen').onclick(); const b=new Blob([lastJson],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`config.${buildConfig().feed_prefix}.json`; a.click(); };
+$('copy').onclick = async ()=>{ if(lastJson==='{ }')$('gen').onclick(); try{ await navigator.clipboard.writeText(lastJson); $('copy').textContent='Copied ✓'; setTimeout(()=>$('copy').textContent='Copy',1500);}catch(e){} };
+$('gen').onclick();
+
+// ---- users & roles generator (PANEL_USERS) ----
+// YTF roles (the four real ones): admin, ceo, manager (head office), plant_manager (per-plant).
+// Rule: email-sourced data (Gmail) = CEO ONLY. All four can see Viber, scoped to their groups.
+const ROLES = [
+  { role:'admin',         note:'system + jobs, NO email', groups:'*' },
+  { role:'ceo',           note:'email access',            groups:'*' },
+  { role:'manager',       note:'head office',             groups:'plant-a,plant-b,head-office' },
+  { role:'plant_manager', note:'per-plant',               groups:'plant-a' },
+];
+const randTok = (r)=> r.replace('_','-')+'-'+Math.random().toString(36).slice(2,10);
+$('roleRows').innerHTML = ROLES.map(({role,note,groups})=>`<div class="row" style="align-items:flex-end">
+  <div style="flex:0 0 130px"><label>${role.replace('_',' ')}</label><input value="${note}" disabled style="opacity:.7" /></div>
+  <div><label>passcode</label><input id="tok_${role}" value="${randTok(role)}" /></div>
+  <div><label>viber groups (csv, * = all)</label><input id="grp_${role}" value="${groups}" /></div>
+</div>`).join('');
+function buildUsers(){
+  const o = {};
+  for(const {role} of ROLES){
+    const t=$('tok_'+role).value.trim(); if(!t) continue;
+    const g=$('grp_'+role).value.split(',').map(x=>x.trim()).filter(Boolean);
+    o[role] = { token: t, groups: g.length?g:['*'] };
+  }
+  return o;
+}
+let usersJson = '{ }';
+$('genUsers').onclick = ()=>{ usersJson = JSON.stringify(buildUsers()); $('usersOut').textContent = JSON.stringify(buildUsers(), null, 2); };
+$('copyUsers').onclick = async ()=>{ if(usersJson==='{ }')$('genUsers').onclick(); try{ await navigator.clipboard.writeText(usersJson); $('copyUsers').textContent='Copied ✓'; setTimeout(()=>$('copyUsers').textContent='Copy',1500);}catch(e){} };
+$('genUsers').onclick();
+
+// ---- live health/meta (needs the panel token) ----
+async function loadHealth(){
+  if(!TOKEN){ $('hStatus').textContent='locked'; $('meta').innerHTML='Unlock via the <a href="/index.html">panel</a> first to see live status.'; return; }
+  try{
+    const s = await (await fetch('/api/control?action=status',{headers:{'x-panel-token':TOKEN},cache:'no-store'})).json();
+    const h = s.health||{}; const live = s.ok && h.reachable;
+    $('health').innerHTML = [
+      ['Live app', `<span class="pill ${live?'ok':'bad'}">${live?(h.status||'ready'):'unreachable'}</span>`],
+      ['Database', `<span class="pill ${h.db_ready?'ok':'warn'}">${h.db_ready?'ready':(h.db_mode||'n/a')}</span>`],
+      ['Coverage', (live? (h.coverage_score||0)+'%' : '—')],
+      ['Backend', `<span class="pill ${h.backend_ready?'ok':'warn'}">${h.backend_ready?'ready':(h.backend_mode||'n/a')}</span>`],
+    ].map(([k,v])=>`<div class="tile"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+    const cfg = await (await fetch('/config.json',{cache:'no-store'})).json().catch(()=>({}));
+    if(cfg.theme === 'dark') document.documentElement.dataset.theme = 'dark'; else document.documentElement.removeAttribute('data-theme');
+    if(cfg.accent){ document.documentElement.style.setProperty('--accent', cfg.accent); document.documentElement.style.setProperty('--accent2', cfg.accent2 || cfg.accent); }
+    const prefix = (cfg && cfg.feed_prefix) || 'ytf';
+    const d = await (await fetch('/api/control?action=data&file='+prefix+'-dashboard',{headers:{'x-panel-token':TOKEN},cache:'no-store'})).json().catch(()=>null);
+    const gen = d&&d.generated_at ? new Date(d.generated_at) : null;
+    const onN = cfg.modules? Object.values(cfg.modules).filter(Boolean).length : '?';
+    const totN = cfg.modules? Object.keys(cfg.modules).length : '?';
+    $('meta').innerHTML = `Tenant <b>${cfg.brand||'—'}</b> · prefix <code>${cfg.feed_prefix||'ytf'}</code> · ${onN}/${totN} modules on · feed generated ${gen?gen.toLocaleString():'—'}`;
+  }catch(e){ $('hStatus').textContent='error'; }
+}
+loadHealth();
+</script>
+</body>
+</html>
