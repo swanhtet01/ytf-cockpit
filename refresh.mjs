@@ -94,6 +94,7 @@ await parallel([
   [o('drive-catalog.mjs'),      [], opsDir, 'drive-catalog'],       // full Drive catalog (plant-tagged)
   [o('production-by-plant.mjs'),[], opsDir, 'production-by-plant'], // real per-plant production
   [o('ai-extract.mjs'),         [], opsDir, 'ai-extract'],          // AI-native extraction of messy real sheets
+  [o('viber-drive.mjs'),        [], opsDir, 'viber-drive'],         // REAL Viber: recent synced media → Claude vision
 ]);
 // COPQ reads quality.json; brief-agent reads insights — both must run after Stage 3
 await run(o('copq.mjs'),      [], opsDir, 'copq');

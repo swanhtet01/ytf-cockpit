@@ -72,6 +72,20 @@ export async function fileMeta(fileId, token) {
   return res.json();
 }
 
+// Search files with an arbitrary Drive query, newest-first, single page (capped).
+// Used to pull only RECENT items from a huge folder (e.g. 16k Viber images) without listing it all.
+export async function searchFiles(q, token, { pageSize = 100, orderBy = 'modifiedTime desc' } = {}) {
+  const fields = 'files(id,name,mimeType,modifiedTime,size,owners(emailAddress))';
+  const params = new URLSearchParams({
+    q, fields, pageSize: String(pageSize), orderBy,
+    supportsAllDrives: 'true', includeItemsFromAllDrives: 'true',
+  });
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files?${params}`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error(`Drive search failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
+  const j = await res.json();
+  return (j.files || []).map((f) => ({ id: f.id, name: f.name, mimeType: f.mimeType, modifiedTime: f.modifiedTime, size: f.size, owner: f.owners?.[0]?.emailAddress || '' }));
+}
+
 // List the direct children of a folder (one page at a time, auto-paginated).
 // Returns [{id,name,mimeType,modifiedTime,owner,shortcutTargetId,shortcutTargetMime}].
 export async function listFolder(folderId, token) {

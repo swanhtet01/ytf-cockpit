@@ -82,6 +82,7 @@ jobs:
       - name: Rebuild feed
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_SA_KEY: ${{ secrets.GOOGLE_SA_KEY }}
         run: |
           mkdir -p feed
           node refresh.mjs --no-llm
