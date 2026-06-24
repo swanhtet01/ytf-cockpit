@@ -86,7 +86,7 @@ jobs:
           DEPLOY_EXIT=${PIPESTATUS[0]}
           set -e
           cat /tmp/vercel-out.txt
-          URL=$(grep -oE 'https://supermega-remote-[a-z0-9.]+-swanhtet01s-projects\.vercel\.app|https://supermega-remote\.vercel\.app' /tmp/vercel-out.txt | head -1)
+          URL=$(grep -oE 'https://ytf-cockpit-[a-z0-9.]+-swanhtet01s-projects\.vercel\.app|https://supermega-remote-[a-z0-9.]+-swanhtet01s-projects\.vercel\.app' /tmp/vercel-out.txt | head -1)
           if [ -n "$URL" ]; then
             npx --yes vercel@latest alias set "$URL" ops.supermega.dev \
               --token "$VERCEL_TOKEN" || true
