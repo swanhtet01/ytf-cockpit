@@ -85,6 +85,8 @@ const productionMc = readJson('production-mc.json', null);  // optional — from
 const manualEntries = readJson('manual-entries.json', null); // optional — from manual-entries.mjs (whiteboard + OCR captures)
 const aiBrief      = readJson('ai-brief.json', null);       // optional — from brief-agent.mjs (Claude daily brief)
 const orders = readJson('orders.json', null);               // optional — from galaxy-orders.mjs (iStock sales + receivables)
+const driveCatalog = readJson('drive-catalog.json', null);  // optional — from drive-catalog.mjs (full plant-tagged Drive catalog)
+const productionByPlant = readJson('production-by-plant.json', null); // optional — from production-by-plant.mjs (real per-plant production)
 const hasCurrentPeriod = (value) => /(?:^|[^0-9])2026(?:[^0-9]|$)/.test(String(value || ''));
 const financeIsCurrent = hasCurrentPeriod(finance?.as_of) || hasCurrentPeriod(finance?.period);
 const exposeSourceCatalog = process.env.EXPOSE_SOURCE_CATALOG === '1';
@@ -275,6 +277,8 @@ const ops = {
   quality: exposeQualityWcm ? quality || null : null,
   copq: copq || null,               // Cost of Poor Quality — always exposed (no email-derived data)
   ai_brief: aiBrief || null,        // Claude-generated daily brief
+  drive_catalog: driveCatalog || null,        // full Drive data-source catalog, plant-tagged
+  production_by_plant: productionByPlant || null, // real per-plant production numbers
 };
 fs.writeFileSync(path.join(pubDir, `${FP}-ops.json`), JSON.stringify(ops, null, 2) + '\n');
 if (driveSources) fs.writeFileSync(path.join(pubDir, `${FP}-sources.json`), JSON.stringify(driveSources, null, 2) + '\n');

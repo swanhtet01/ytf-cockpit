@@ -88,9 +88,11 @@ if (!noLlm) {
 console.log('\n[3/4] Normalise + cross-module analysis (parallel)…');
 await run(o('manual-entries.mjs'));
 await parallel([
-  [o('insights.mjs'), [], opsDir, 'insights'],
-  [o('trends.mjs'),   [], opsDir, 'trends'],
-  [o('quality.mjs'),  [], opsDir, 'quality'],
+  [o('insights.mjs'),           [], opsDir, 'insights'],
+  [o('trends.mjs'),             [], opsDir, 'trends'],
+  [o('quality.mjs'),            [], opsDir, 'quality'],
+  [o('drive-catalog.mjs'),      [], opsDir, 'drive-catalog'],       // full Drive catalog (plant-tagged)
+  [o('production-by-plant.mjs'),[], opsDir, 'production-by-plant'], // real per-plant production
 ]);
 // COPQ reads quality.json; brief-agent reads insights — both must run after Stage 3
 await run(o('copq.mjs'),      [], opsDir, 'copq');

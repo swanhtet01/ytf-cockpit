@@ -49,6 +49,13 @@ jobs:
           mkdir -p data/drive-cache data/raw out
           node pull-drive.mjs
 
+      - name: Crawl full Drive tree (per-plant auto-discovery)
+        working-directory: ytf-ops-tools
+        env:
+          GOOGLE_SA_KEY: ${{ secrets.GOOGLE_SA_KEY }}
+        run: |
+          node crawl-drive.mjs || echo "crawl-drive failed (non-fatal) — generators fall back gracefully"
+
       - name: Fetch manual entries from app
         env:
           PANEL_TOKEN: ${{ secrets.PANEL_TOKEN_YTF }}

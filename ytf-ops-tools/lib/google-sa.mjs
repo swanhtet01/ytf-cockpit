@@ -63,9 +63,39 @@ export async function exportDriveFile(fileId, mimeType, token) {
 }
 
 // File metadata (name, modifiedTime, mimeType) — used to detect freshness + Google-native files.
+// Includes shortcutDetails so callers can resolve Drive shortcuts to their real targets.
 export async function fileMeta(fileId, token) {
-  const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?fields=id,name,mimeType,modifiedTime&supportsAllDrives=true`;
+  const fields = 'id,name,mimeType,modifiedTime,owners(emailAddress),shortcutDetails(targetId,targetMimeType)';
+  const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?fields=${encodeURIComponent(fields)}&supportsAllDrives=true`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error(`Drive meta ${fileId} failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
   return res.json();
+}
+
+// List the direct children of a folder (one page at a time, auto-paginated).
+// Returns [{id,name,mimeType,modifiedTime,owner,shortcutTargetId,shortcutTargetMime}].
+export async function listFolder(folderId, token) {
+  const fields = 'nextPageToken,files(id,name,mimeType,modifiedTime,owners(emailAddress),shortcutDetails(targetId,targetMimeType))';
+  const out = [];
+  let pageToken = '';
+  do {
+    const params = new URLSearchParams({
+      q: `'${folderId}' in parents and trashed=false`,
+      fields, pageSize: '1000', supportsAllDrives: 'true', includeItemsFromAllDrives: 'true',
+    });
+    if (pageToken) params.set('pageToken', pageToken);
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?${params}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error(`Drive list ${folderId} failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
+    const j = await res.json();
+    for (const f of j.files || []) {
+      out.push({
+        id: f.id, name: f.name, mimeType: f.mimeType, modifiedTime: f.modifiedTime,
+        owner: f.owners?.[0]?.emailAddress || '',
+        shortcutTargetId: f.shortcutDetails?.targetId || '',
+        shortcutTargetMime: f.shortcutDetails?.targetMimeType || '',
+      });
+    }
+    pageToken = j.nextPageToken || '';
+  } while (pageToken);
+  return out;
 }
