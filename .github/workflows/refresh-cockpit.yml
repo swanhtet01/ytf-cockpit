@@ -69,27 +69,24 @@ jobs:
           mkdir -p feed
           node refresh.mjs --no-llm
 
-      - name: Publish feed as static
-        run: |
-          for f in ytf-ops.json ytf-dashboard.json ytf-claims.json ytf-procurement.json ytf-raw-material.json; do
-            cp "feed/$f" "public/$f" 2>/dev/null || true
-          done
-
-      - name: Deploy to Vercel
+      - name: Upload feed to Vercel Blob
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
         run: |
-          set +e
-          npx --yes vercel@latest deploy --prod --yes \
-            --token "$VERCEL_TOKEN" \
-            2>&1 | tee /tmp/vercel-out.txt
-          DEPLOY_EXIT=${PIPESTATUS[0]}
-          set -e
-          cat /tmp/vercel-out.txt
-          URL=$(grep -oE 'https://ytf-cockpit-[a-z0-9.]+-swanhtet01s-projects\.vercel\.app|https://supermega-remote-[a-z0-9.]+-swanhtet01s-projects\.vercel\.app' /tmp/vercel-out.txt | head -1)
-          if [ -n "$URL" ]; then
-            npx --yes vercel@latest alias set "$URL" ops.supermega.dev \
-              --token "$VERCEL_TOKEN" || true
-            echo "Aliased to ops.supermega.dev"
-          fi
-          exit $DEPLOY_EXIT
+          npm install --prefix /tmp/blobupload @vercel/blob 2>/dev/null
+          node -e "
+            const {put} = require('/tmp/blobupload/node_modules/@vercel/blob');
+            const fs = require('fs');
+            const files = ['ytf-ops.json','ytf-dashboard.json','ytf-claims.json','ytf-procurement.json','ytf-raw-material.json'];
+            (async () => {
+              for (const f of files) {
+                const path = 'feed/' + f;
+                if (!fs.existsSync(path)) { console.log('skip (missing):', f); continue; }
+                const content = fs.readFileSync(path, 'utf8');
+                const result = await put('ytf-feed/' + f, content, {
+                  access: 'public', addRandomSuffix: false, contentType: 'application/json'
+                });
+                console.log('uploaded:', f, '->', result.url.slice(0,60));
+              }
+            })().catch(e => { console.error('blob upload error:', e.message); process.exit(1); });
+          "
