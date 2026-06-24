@@ -19,7 +19,7 @@ const KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = process.env.AI_EXTRACT_MODEL || 'claude-sonnet-4-6';
 // under drive-cache/ so the CI actions/cache persists it across runs (steady-state cost ~0)
 const CACHE_PATH = path.join(dataDir, 'drive-cache', 'ai-extract-cache.json');
-const MAX_FILES = Number(process.env.AI_EXTRACT_MAX || 14); // cap Claude calls per run
+const MAX_FILES = Number(process.env.AI_EXTRACT_MAX || 20); // cap Claude calls per run (cached after first)
 
 const invPath = path.join(dataDir, 'drive-inventory.json');
 if (!fs.existsSync(invPath)) { console.error('ai-extract: no drive-inventory.json. Skipping.'); process.exit(0); }
@@ -30,10 +30,13 @@ let cache = {}; try { cache = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf8')); }
 // pick the freshest 1-2 downloaded files per (plant, category) for the categories that drive the
 // "empty/zero" screens. These are the ones whose numbers the app shows.
 const TARGET_CATS = { sales: 2, quality: 2, finance: 2, production: 1, 'daily-production': 1, stock: 1 };
+// never extract sensitive HR/payroll files — not ops metrics, and privacy-sensitive
+const SENSITIVE = /salary|payslip|payroll|wage|လစာ|staff list|employee/i;
 const buckets = {};
 for (const f of inv.files || []) {
   if (!f.cache || !f.spreadsheet) continue;
   if (!(f.category in TARGET_CATS)) continue;
+  if (SENSITIVE.test(f.name)) continue;
   const k = `${f.plant}/${f.category}`;
   (buckets[k] = buckets[k] || []).push(f);
 }
