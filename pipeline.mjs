@@ -59,11 +59,11 @@ const readJson = (file, fallback) => {
 };
 
 // --- load ledgers ---
-const summary = readJson('summary.json', null);
-if (!summary) {
-  console.error(`No summary.json in ${srcDir}. Run ytf-ops-tools/extract.mjs first.`);
-  process.exit(1);
+const _summary = readJson('summary.json', null);
+if (!_summary) {
+  console.warn(`No summary.json in ${srcDir} — Gmail data unavailable, continuing with Drive-only data.`);
 }
+const summary = _summary || {};
 const claims = readCsv('claims-ledger.csv');
 const procurement = readCsv('procurement-ledger.csv');
 const rawmat = readCsv('raw-material-shipments.csv');
