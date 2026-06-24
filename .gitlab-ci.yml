@@ -1,0 +1,43 @@
+stages:
+  - refresh
+
+variables:
+  NODE_VERSION: "20"
+
+refresh-cockpit:
+  stage: refresh
+  image: node:20-slim
+  timeout: 20 minutes
+  interruptible: false
+
+  cache:
+    key: drive-cache
+    paths:
+      - ytf-ops-tools/data/drive-cache/
+
+  script:
+    # Pull Drive workbooks
+    - cd ytf-ops-tools
+    - mkdir -p data/drive-cache data/raw out
+    - node pull-drive.mjs
+    - cd ..
+
+    # Rebuild feed
+    - mkdir -p feed
+    - node refresh.mjs --no-llm
+
+    # Deploy to Vercel
+    - |
+      DEPLOY_OUT=$(npx --yes vercel@latest deploy --prod --yes \
+        --token "$VERCEL_TOKEN" \
+        --scope swanhtet01s-projects 2>&1)
+      echo "$DEPLOY_OUT"
+      URL=$(echo "$DEPLOY_OUT" | grep -oE 'https://supermega-remote-[a-z0-9]+-swanhtet01s-projects\.vercel\.app' | head -1)
+      if [ -n "$URL" ]; then
+        npx --yes vercel@latest alias set "$URL" ops.supermega.dev \
+          --token "$VERCEL_TOKEN" --scope swanhtet01s-projects || true
+      fi
+
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
