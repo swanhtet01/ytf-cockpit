@@ -19,6 +19,25 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Blob helpers — gracefully no-op when not in a Vercel environment
+const BLOB_NOTICES_PATH = 'ytf/notices.json';
+async function blobPut(pathname, data) {
+  try {
+    const { put } = await import('@vercel/blob');
+    return await put(pathname, JSON.stringify(data), { access: 'public', allowOverwrite: true, addRandomSuffix: false });
+  } catch { return null; }
+}
+async function blobGet(pathname) {
+  try {
+    const { list } = await import('@vercel/blob');
+    const { blobs } = await list({ prefix: pathname });
+    const b = blobs.find(x => x.pathname === pathname);
+    if (!b) return null;
+    const r = await fetch(b.url);
+    return r.ok ? await r.json() : null;
+  } catch { return null; }
+}
+
 const DEFAULT_LIVE_BASE = 'https://supermega-ytf-swanhtet01s-projects.vercel.app';
 // PRIVATE data feed — bundled into this function via vercel.json includeFiles, served only after the panel-token check
 const FEED = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'feed');
@@ -326,9 +345,11 @@ export default async function handler(req, res) {
       const NOTICES_FILE = path.join(FEED, `${FEED_PREFIX}-notices.json`);
 
       if (req.method === 'GET') {
-        let notices = [];
-        try { notices = JSON.parse(fs.readFileSync(NOTICES_FILE, 'utf8')); } catch { /* no file yet */ }
-        // filter by role groups — plant_manager only sees their plant group
+        // Read from Blob first, fall back to local file
+        let notices = await blobGet(BLOB_NOTICES_PATH);
+        if (!notices) {
+          try { notices = JSON.parse(fs.readFileSync(NOTICES_FILE, 'utf8')); } catch { notices = []; }
+        }
         const groups = who.groups || [];
         const visible = groups.includes('*')
           ? notices
@@ -337,7 +358,6 @@ export default async function handler(req, res) {
       }
 
       if (req.method === 'POST') {
-        // read body
         const chunks = [];
         await new Promise((resolve) => { req.on('data', (c) => chunks.push(c)); req.on('end', resolve); });
         let body = {};
@@ -345,13 +365,15 @@ export default async function handler(req, res) {
 
         const { text, group, type } = body;
         if (!text || String(text).trim().length < 2) return send(res, 400, { error: 'Notice text is required.' });
-        // role must have access to the group they're posting to
         const groups = who.groups || [];
         const targetGroup = String(group || 'head-office');
         if (!groups.includes('*') && !groups.includes(targetGroup)) return send(res, 403, { error: `Your role cannot post to group "${targetGroup}".` });
 
-        let notices = [];
-        try { notices = JSON.parse(fs.readFileSync(NOTICES_FILE, 'utf8')); } catch { /* no file yet */ }
+        // Read current notices from Blob or local
+        let notices = await blobGet(BLOB_NOTICES_PATH);
+        if (!notices) {
+          try { notices = JSON.parse(fs.readFileSync(NOTICES_FILE, 'utf8')); } catch { notices = []; }
+        }
         const notice = {
           id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           text: String(text).trim().slice(0, 1000),
@@ -361,22 +383,40 @@ export default async function handler(req, res) {
           posted_at: new Date().toISOString(),
           pinned: false,
         };
-        // prepend, keep most recent 200
         notices.unshift(notice);
         notices = notices.slice(0, 200);
+
+        // Write to Blob (durable) or fall back to local file
+        const saved = await blobPut(BLOB_NOTICES_PATH, notices);
+        if (saved) return send(res, 200, { ok: true, notice, stored: 'blob' });
         try {
           fs.writeFileSync(NOTICES_FILE, JSON.stringify(notices, null, 2) + '\n');
-          return send(res, 200, { ok: true, notice });
-        } catch (e) {
-          // Vercel read-only FS — return the notice for client-side download
-          return send(res, 200, { ok: false, notice, download: true, error: 'Serverless FS is read-only — download and drop into the feed folder.' });
+          return send(res, 200, { ok: true, notice, stored: 'local' });
+        } catch {
+          return send(res, 200, { ok: false, notice, download: true });
         }
       }
 
       return send(res, 405, { error: 'Use GET to list or POST to add a notice.' });
     }
 
-    return send(res, 400, { error: `Unknown action "${action}".`, allowed: ['status', 'run', 'jobs', 'notices'] });
+    // ── entry: persist a capture from entry.html to Blob ────────────────────────────
+    if (action === 'entry' && req.method === 'POST') {
+      const chunks = [];
+      await new Promise((resolve) => { req.on('data', (c) => chunks.push(c)); req.on('end', resolve); });
+      let body = {};
+      try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { return send(res, 400, { error: 'Invalid JSON body.' }); }
+      if (!body.kind || !body.machine) return send(res, 400, { error: 'Entry must have kind and machine.' });
+
+      const ENTRY_PATH = `ytf/entries/${Date.now()}-${Math.random().toString(36).slice(2,7)}.json`;
+      const entry = { ...body, submitted_by: who.role, submitted_at: new Date().toISOString() };
+      const saved = await blobPut(ENTRY_PATH, entry);
+      if (saved) return send(res, 200, { ok: true, stored: 'blob', path: ENTRY_PATH });
+      // Blob not available — return for local download
+      return send(res, 200, { ok: false, download: true, entry });
+    }
+
+    return send(res, 400, { error: `Unknown action "${action}".`, allowed: ['status', 'run', 'jobs', 'data', 'whoami', 'notices', 'entry'] });
   } catch (err) {
     console.error('control proxy error:', err && err.stack || err);  // detail stays server-side only
     return send(res, 502, { error: 'Proxy error — the live app could not be reached.' });

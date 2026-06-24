@@ -4,5 +4,10 @@
   "private": true,
   "type": "module",
   "description": "Mobile control panel + structured-data proxy for the SuperMega / YTF pipeline.",
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.4.1"
+  }
 }
