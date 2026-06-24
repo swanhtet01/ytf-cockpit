@@ -92,8 +92,9 @@ await parallel([
   [o('trends.mjs'),   [], opsDir, 'trends'],
   [o('quality.mjs'),  [], opsDir, 'quality'],
 ]);
-// COPQ reads quality.json — must run after Stage 3
-await run(o('copq.mjs'), [], opsDir, 'copq');
+// COPQ reads quality.json; brief-agent reads insights — both must run after Stage 3
+await run(o('copq.mjs'),      [], opsDir, 'copq');
+await run(o('brief-agent.mjs'), [], opsDir, 'brief-agent');
 
 // ── Stage 4: Assemble final dashboard JSON ───────────────────────────────────────
 console.log('\n[4/4] Assembling dashboard…');
