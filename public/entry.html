@@ -102,6 +102,17 @@
 const $ = (s)=>document.querySelector(s);
 const esc = (s)=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const LS='ytf_entries';
+const TOKEN = localStorage.getItem('sm_remote_token') || '';
+async function syncToServer(rec){
+  if(!TOKEN) return;
+  try{
+    const r = await fetch('/api/control?action=entry',{
+      method:'POST', headers:{'x-panel-token':TOKEN,'Content-Type':'application/json'},
+      body:JSON.stringify(rec), cache:'no-store'
+    });
+    if(r.ok){ const d=await r.json(); if(d.stored==='blob') toast('Saved ✓ (server)'); }
+  }catch{ /* offline — local save is enough */ }
+}
 const today=()=> new Date().toISOString().slice(0,10);
 let kind='claim';
 let entries = JSON.parse(localStorage.getItem(LS)||'[]');
@@ -195,7 +206,9 @@ $('#save').onclick=()=>{
   const rec={kind, entered_at:new Date().toISOString(), id:'m'+Date.now().toString(36)};
   for(const f of FIELDS[kind]){ const el=$('#f_'+f.n); rec[f.n]= f.t==='number' ? Number(el.value||0) : el.value; }
   entries.push(rec); persist();
-  toast('Saved ✓'); renderForm();
+  toast('Saved ✓');
+  syncToServer(rec); // fire-and-forget to Blob; updates toast to "Saved ✓ (server)" on success
+  renderForm();
 };
 
 function download(name, text, type){
