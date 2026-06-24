@@ -73,20 +73,29 @@ jobs:
         env:
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
         run: |
-          npm install --prefix /tmp/blobupload @vercel/blob 2>/dev/null
           node -e "
-            const {put} = require('/tmp/blobupload/node_modules/@vercel/blob');
             const fs = require('fs');
             const files = ['ytf-ops.json','ytf-dashboard.json','ytf-claims.json','ytf-procurement.json','ytf-raw-material.json'];
+            const token = process.env.BLOB_READ_WRITE_TOKEN;
+            if (!token) { console.error('BLOB_READ_WRITE_TOKEN not set'); process.exit(1); }
             (async () => {
               for (const f of files) {
                 const path = 'feed/' + f;
                 if (!fs.existsSync(path)) { console.log('skip (missing):', f); continue; }
-                const content = fs.readFileSync(path, 'utf8');
-                const result = await put('ytf-feed/' + f, content, {
-                  access: 'public', addRandomSuffix: false, contentType: 'application/json'
+                const body = fs.readFileSync(path);
+                const r = await fetch('https://blob.vercel-storage.com/ytf-feed/' + f, {
+                  method: 'PUT',
+                  headers: {
+                    Authorization: 'Bearer ' + token,
+                    'x-api-version': '7',
+                    'x-add-random-suffix': '0',
+                    'content-type': 'application/json',
+                  },
+                  body,
                 });
-                console.log('uploaded:', f, '->', result.url.slice(0,60));
+                if (!r.ok) { const t = await r.text(); console.error('ERR', f, r.status, t.slice(0,200)); process.exit(1); }
+                const j = await r.json();
+                console.log('uploaded:', f, '->', j.url.slice(0,70));
               }
             })().catch(e => { console.error('blob upload error:', e.message); process.exit(1); });
           "
