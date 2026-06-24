@@ -97,7 +97,7 @@ await run(o('copq.mjs'), [], opsDir, 'copq');
 
 // ── Stage 4: Assemble final dashboard JSON ───────────────────────────────────────
 console.log('\n[4/4] Assembling dashboard…');
-await run(path.join(DIR, 'pipeline.mjs'), [], DIR, 'pipeline');
+await run(path.join(DIR, 'pipeline.mjs'), [path.join(opsDir, 'out')], DIR, 'pipeline');
 
 // ── Summary ──────────────────────────────────────────────────────────────────────
 const total = ((Date.now() - t0) / 1000).toFixed(1);

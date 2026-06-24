@@ -17,7 +17,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
-const srcDir = process.argv[2] || path.join(DIR, '..', 'ytf-ops-tools', 'out');
+const srcDir = process.argv[2] || (
+  fs.existsSync(path.join(DIR, 'ytf-ops-tools', 'out'))
+    ? path.join(DIR, 'ytf-ops-tools', 'out')
+    : path.join(DIR, '..', 'ytf-ops-tools', 'out')
+);
 const pubDir = path.join(DIR, 'feed'); // PRIVATE feed dir — served only via the token-gated /api/control?action=data (not public CDN)
 fs.mkdirSync(pubDir, { recursive: true });
 // feed namespace — must match the panel's config.json `feed_prefix` and the server FEED_PREFIX env (default 'ytf')
