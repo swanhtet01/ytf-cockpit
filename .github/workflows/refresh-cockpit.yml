@@ -2,9 +2,9 @@ name: Refresh YTF ops cockpit
 
 on:
   schedule:
-    - cron: '30 0 * * *'   # 00:30 UTC = 07:00 Myanmar (MMT = UTC+6:30)
-    - cron: '30 11 * * *'  # 11:30 UTC = 18:00 Myanmar
-  workflow_dispatch: {}     # "Run workflow" button for on-demand refresh
+    - cron: '30 0 * * *'
+    - cron: '30 11 * * *'
+  workflow_dispatch:
 
 concurrency:
   group: refresh-cockpit
@@ -13,11 +13,13 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
 
@@ -26,9 +28,10 @@ jobs:
         with:
           path: ytf-ops-tools/data/drive-cache
           key: drive-cache-${{ github.run_id }}
-          restore-keys: drive-cache-
+          restore-keys: |
+            drive-cache-
 
-      - name: Pull latest Drive workbooks (service account)
+      - name: Pull Drive workbooks
         working-directory: ytf-ops-tools
         env:
           GOOGLE_SA_KEY: ${{ secrets.GOOGLE_SA_KEY }}
@@ -36,24 +39,21 @@ jobs:
           mkdir -p data/drive-cache data/raw out
           node pull-drive.mjs
 
-      - name: Rebuild the private feed
+      - name: Rebuild feed
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           mkdir -p feed
           node refresh.mjs --no-llm
 
-      - name: Deploy to Vercel (production)
+      - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          URL=$(npx --yes vercel@latest deploy --prod --yes \
-            --token "$VERCEL_TOKEN" \
-            --scope swanhtet01s-projects \
-            2>&1 | grep -oE 'https://supermega-remote-[a-z0-9]+-swanhtet01s-projects\.vercel\.app' | head -1)
-          echo "Deployed: $URL"
+          DEPLOY_OUT=$(npx --yes vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN" --scope swanhtet01s-projects 2>&1)
+          echo "$DEPLOY_OUT"
+          URL=$(echo "$DEPLOY_OUT" | grep -oE 'https://supermega-remote-[a-z0-9]+-swanhtet01s-projects\.vercel\.app' | head -1)
           if [ -n "$URL" ]; then
-            npx --yes vercel@latest alias set "$URL" ops.supermega.dev \
-              --token "$VERCEL_TOKEN" \
-              --scope swanhtet01s-projects || true
+            npx --yes vercel@latest alias set "$URL" ops.supermega.dev --token "$VERCEL_TOKEN" --scope swanhtet01s-projects || true
+            echo "Aliased to ops.supermega.dev"
           fi
