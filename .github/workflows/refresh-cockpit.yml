@@ -2,9 +2,8 @@ name: Refresh YTF ops cockpit
 
 on:
   schedule:
-    - cron: '30 0 * * *'
-    - cron: '30 11 * * *'
-  workflow_dispatch:
+    - cron: '0 */3 * * *'   # every 3 hours (was twice daily) — fresher stock/production, fewer blind spots
+  workflow_dispatch:         # + on-demand: a "Refresh now" button / api/sync-ops can dispatch this
 
 concurrency:
   group: refresh-cockpit
@@ -22,6 +21,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+
+      - name: Install deps (SheetJS for robust .xls/.xlsx parsing)
+        run: npm install --no-audit --no-fund || npm install --no-audit --no-fund
 
       - name: Restore Drive cache
         uses: actions/cache@v4

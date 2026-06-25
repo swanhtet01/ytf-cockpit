@@ -171,13 +171,17 @@ const main = async () => {
 
   let ok = 0;
   for (const m of toGet) {
-    const fname = `${m.plant}__${m.category}__${safeName(m.name).replace(/\.(xlsx|xls)$/i, '')}.xlsx`;
-    const dest = path.join(CACHE, fname);
     try {
       const bytes = m.mimeType === SHEET_MIME
         ? await exportDriveFile(m.fileId, XLSX_MIME, token)
         : await downloadDriveFile(m.fileId, token);
-      if (bytes.slice(0, 2).toString('hex') !== '504b') throw new Error('not xlsx');
+      const magic = bytes.slice(0, 4).toString('hex');
+      const isZip = magic.startsWith('504b');      // .xlsx (zip)
+      const isOle = magic === 'd0cf11e0';          // legacy .xls (OLE2) — SheetJS reads it
+      if (!isZip && !isOle) throw new Error('not a spreadsheet (' + magic + ')');
+      const ext = isOle ? 'xls' : 'xlsx';
+      const fname = `${m.plant}__${m.category}__${safeName(m.name).replace(/\.(xlsx|xls)$/i, '')}.${ext}`;
+      const dest = path.join(CACHE, fname);
       fs.writeFileSync(dest, bytes);
       m.cache = path.join('scan', fname);
       ok++;
