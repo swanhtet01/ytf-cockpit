@@ -65,47 +65,55 @@ const main = async () => {
     } catch (e) { console.error('  search', folder, e.message); }
   }
   // dedupe by fileId, drop already-cached, cap
+  // process: brand-new images + backfill (cached as operational but missing the stored record)
+  const needsBackfill = (f) => cache[f.id] && cache[f.id].type && cache[f.id].type !== 'other' && !cache[f.id].rec;
   const seen = new Set();
-  const fresh = imgs.filter((f) => { if (seen.has(f.id) || cache[f.id]) return false; seen.add(f.id); return true; })
+  const fresh = imgs.filter((f) => { if (seen.has(f.id)) return false; seen.add(f.id); return !cache[f.id] || needsBackfill(f); })
     .sort((a, b) => (b.modifiedTime || '').localeCompare(a.modifiedTime || ''))
     .slice(0, MAX);
 
-  console.log(`viber-drive — ${imgs.length} recent images (since ${sinceIso.slice(0, 10)}), ${fresh.length} new to process (cap ${MAX})`);
+  console.log(`viber-drive — ${imgs.length} recent images (since ${sinceIso.slice(0, 10)}), ${fresh.length} to process/backfill (cap ${MAX})`);
 
-  const items = [];
   let ops = 0;
   for (const f of fresh) {
     try {
       const buf = await downloadDriveFile(f.id, token);
-      if (buf.length > 5 * 1024 * 1024) { cache[f.id] = { skipped: 'too big' }; continue; }
+      const mod = (f.modifiedTime || '').slice(0, 10);
+      if (buf.length > 5 * 1024 * 1024) { cache[f.id] = { skipped: 'too big', mod }; continue; }
       const ex = await vision(buf.toString('base64'), mediaOf(f.name));
-      cache[f.id] = { at: new Date().toISOString(), type: ex.type, conf: ex.confidence };
+      cache[f.id] = { at: new Date().toISOString(), type: ex.type, conf: ex.confidence, mod };
       if (ex.error) { console.log('  ✗', f.name.slice(0, 20), ex.error); continue; }
-      const plant = ex.plant_hint === 'bilin' ? 'plant-a' : ex.plant_hint === 'spt' ? 'plant-b' : 'company';
-      const rec = { fileId: f.id, modified: (f.modifiedTime || '').slice(0, 10), date: ex.date || (f.modifiedTime || '').slice(0, 10), type: ex.type, plant, summary: ex.summary, confidence: ex.confidence, records: (ex.records || []) };
-      if (ex.type !== 'other' && (ex.records || []).length) ops++;
-      items.push(rec);
+      // plant ground-truth: Bilin = Plant B (radial/MC), Yangon/SPT = Plant A (bias/ag)
+      const plant = ex.plant_hint === 'bilin' ? 'plant-b' : ex.plant_hint === 'spt' ? 'plant-a' : 'company';
+      const rec = { fileId: f.id, modified: mod, date: ex.date || mod, type: ex.type, plant, summary: ex.summary, confidence: ex.confidence, records: (ex.records || []) };
+      if (ex.type !== 'other' && (ex.records || []).length) { ops++; cache[f.id].rec = rec; } // PERSIST the record so it survives across runs
       console.log(`  ✓ ${(ex.type || '?').padEnd(17)} ${(ex.records?.length || 0)} rec  ${(ex.summary || '').slice(0, 56)}`);
     } catch (e) { cache[f.id] = { error: e.message }; console.log('  ✗', f.name.slice(0, 20), e.message); }
   }
 
   fs.writeFileSync(CACHE_PATH, JSON.stringify(cache, null, 2));
 
-  // aggregate by type for the cockpit (orders/production/claims are the high-value ledgers)
+  // ACCUMULATE every cached operational record within the window — so the feed persists even when
+  // 0 new images processed this run (this is the fix for "120 images, 0 items").
+  const cutoff = sinceIso.slice(0, 10);
+  const allOps = Object.values(cache)
+    .filter((c) => c && c.rec && c.rec.records && c.rec.records.length && (c.mod || c.rec.modified || '') >= cutoff)
+    .map((c) => c.rec)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   const byType = {};
-  for (const it of items) { if (it.type === 'other' || !it.records.length) continue; (byType[it.type] = byType[it.type] || []).push(it); }
+  for (const it of allOps) (byType[it.type] = byType[it.type] || []).push(it);
   const out = {
     generated_at: new Date().toISOString(),
     source: 'Viber media synced to Google Drive (autonomous)',
     window_days: SINCE_DAYS,
     recent_images: imgs.length,
     processed: fresh.length,
-    operational: ops,
+    operational: allOps.length,
     by_type: byType,
-    items: items.filter((it) => it.type !== 'other' && it.records.length).slice(0, 60),
+    items: allOps.slice(0, 60),
   };
   fs.writeFileSync(path.join(outDir, 'viber-intel.json'), JSON.stringify(out, null, 2) + '\n');
-  console.log(`viber-drive — ${ops}/${fresh.length} operational; types: ${Object.keys(byType).map((k) => k + ':' + byType[k].length).join(' ') || 'none'} → out/viber-intel.json`);
+  console.log(`viber-drive — ${ops} new ops this run, ${allOps.length} total in window; types: ${Object.keys(byType).map((k) => k + ':' + byType[k].length).join(' ') || 'none'} → out/viber-intel.json`);
 };
 
 main().catch((e) => { console.error('viber-drive failed:', e.message); process.exit(0); });
