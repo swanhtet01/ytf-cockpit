@@ -69,7 +69,8 @@ const main = async () => {
   const needsBackfill = (f) => cache[f.id] && cache[f.id].type && cache[f.id].type !== 'other' && !cache[f.id].rec;
   const seen = new Set();
   const fresh = imgs.filter((f) => { if (seen.has(f.id)) return false; seen.add(f.id); return !cache[f.id] || needsBackfill(f); })
-    .sort((a, b) => (b.modifiedTime || '').localeCompare(a.modifiedTime || ''))
+    // process KNOWN-operational backfill candidates first (recover them within the cap), then newest
+    .sort((a, b) => { const d = (needsBackfill(b) ? 1 : 0) - (needsBackfill(a) ? 1 : 0); return d || (b.modifiedTime || '').localeCompare(a.modifiedTime || ''); })
     .slice(0, MAX);
 
   console.log(`viber-drive — ${imgs.length} recent images (since ${sinceIso.slice(0, 10)}), ${fresh.length} to process/backfill (cap ${MAX})`);
