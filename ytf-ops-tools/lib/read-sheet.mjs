@@ -11,21 +11,23 @@ async function lib() {
 }
 
 // returns { sheets: [{ name, rows: any[][] }] }
+// Use the proven xlsx-lite for .xlsx (zip) — generators' column maps are tuned to its output.
+// Use SheetJS ONLY for legacy .xls (OLE2), which xlsx-lite cannot read at all.
 export async function readSheet(path) {
-  const x = await lib();
-  if (x) {
-    const wb = x.readFile(path, { cellDates: false, cellNF: false, cellText: false });
-    return {
-      sheets: (wb.SheetNames || []).map((name) => {
-        const ws = wb.Sheets[name];
-        const rows = x.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, blankrows: false });
-        return { name, rows: rows || [] };
-      }),
-    };
+  if (!isOle2(path)) {
+    const { readXlsx } = await import('./xlsx-lite.mjs');
+    return readXlsx(path);
   }
-  // fallback: only works for .xlsx (zip)
-  const { readXlsx } = await import('./xlsx-lite.mjs');
-  return readXlsx(path);
+  const x = await lib();
+  if (!x) throw new Error('legacy .xls needs SheetJS (not installed)');
+  const wb = x.readFile(path, { cellDates: false, cellNF: false, cellText: false });
+  return {
+    sheets: (wb.SheetNames || []).map((name) => {
+      const ws = wb.Sheets[name];
+      const rows = x.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, blankrows: false });
+      return { name, rows: rows || [] };
+    }),
+  };
 }
 
 export function isOle2(path) {
