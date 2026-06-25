@@ -10,6 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readXlsx } from './lib/xlsx-lite.mjs';
 import { parseNum } from './lib/num.mjs';
+import { parseTyreSize } from './lib/tyre-size.mjs';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 const outDir = path.join(DIR, 'out');
@@ -71,36 +72,43 @@ function parseProduction(file) {
   const sum = (f) => items.reduce((s, x) => s + f(x), 0);
   const produced = sum((x) => x.total), gA = sum((x) => x.a), gB = sum((x) => x.b), gR = sum((x) => x.r), wkg = sum((x) => x.weight_kg);
   const pct = (v) => (produced ? +(100 * v / produced).toFixed(1) : 0);
+  // construction mix is the REAL plant arbiter: radial/MC = Plant B (Bilin), bias = Plant A (Yangon)
+  const radialVol = items.filter((x) => parseTyreSize(x.size).construction === 'radial').reduce((s, x) => s + x.total, 0);
+  const biasVol = items.filter((x) => parseTyreSize(x.size).construction === 'bias').reduce((s, x) => s + x.total, 0);
   return {
     totals: {
       produced, grade_a: gA, grade_b: gB, reject: gR,
       grade_a_pct: pct(gA), off_grade_pct: +(pct(gB) + pct(gR)).toFixed(1),
       active_sizes: items.filter((x) => x.total > 0).length, total_weight_mt: +(wkg / 1000).toFixed(1),
     },
+    construction_mix: { radial: radialVol, bias: biasVol, dominant: radialVol >= biasVol ? 'radial' : 'bias' },
     top_sizes: [...items].sort((a, b) => b.total - a.total).slice(0, 12),
   };
 }
 
-const result = { generated_at: new Date().toISOString(), plants: {}, note: '' };
+const result = { generated_at: new Date().toISOString(), plants: {}, note: 'Plant routed by tyre construction: radial/MC → Plant B (Bilin), bias/nylon/agricultural → Plant A (Yangon).' };
 const cacheRoot = path.join(DIR, 'data', 'drive-cache');
+const yearOf = (s) => { const m = String(s).match(/20(2\d|1\d)/); return m ? +m[0] : 0; };
+const JUNK = /\bsample\b|\bcopy of\b|_not order_|\btemplate\b|\btest\b|draft|\bold\b|backup|government/i;
+
+// parse EVERY downloaded production file, route to plant by construction mix (the real arbiter)
+const parsedFiles = [];
+for (const f of (inv.files || [])) {
+  if (f.category !== 'production' || !f.cache || JUNK.test(f.name)) continue;
+  const full = path.join(cacheRoot, f.cache.replace(/^scan[\\/]/, 'scan/'));
+  if (!fs.existsSync(full)) continue;
+  const p = parseProduction(full);
+  if (p.error || !p.totals || !p.totals.produced) continue;
+  const plant = p.construction_mix.dominant === 'radial' ? 'plant-b' : 'plant-a'; // radial/MC=Bilin, bias=Yangon
+  parsedFiles.push({ name: f.name, modified: f.modifiedTime, year: yearOf(f.name), plant, ...p });
+}
 
 for (const plant of ['plant-a', 'plant-b']) {
-  const yearOf = (s) => { const m = String(s).match(/20(2\d|1\d)/); return m ? +m[0] : 0; };
-  const prodFiles = (inv.files || [])
-    .filter((f) => f.plant === plant && f.category === 'production' && f.cache)
-    // latest YEAR in the filename first, then most recently modified
-    .sort((a, b) => yearOf(b.name) - yearOf(a.name) || (b.modifiedTime || '').localeCompare(a.modifiedTime || ''));
-  // prefer the standard monthly layout (latest year)
-  const standard = prodFiles.filter((f) => /monthly tyre production/i.test(f.name))
-    .sort((a, b) => yearOf(b.name) - yearOf(a.name))[0] || prodFiles[0];
-  if (!standard) { result.plants[plant] = { available: prodFiles.length, parsed: false, reason: 'no production workbook downloaded' }; continue; }
-  const full = path.join(cacheRoot, standard.cache.replace(/^scan[\\/]/, 'scan/'));
-  const parsed = fs.existsSync(full) ? parseProduction(full) : { error: 'cache file missing' };
-  if (parsed.error) {
-    result.plants[plant] = { available: prodFiles.length, parsed: false, source: standard.name, reason: parsed.error, other_files: prodFiles.slice(0, 6).map((f) => f.name) };
-  } else {
-    result.plants[plant] = { parsed: true, source: standard.name, modified: (standard.modifiedTime || '').slice(0, 10), ...parsed, available: prodFiles.length };
-  }
+  const cands = parsedFiles.filter((f) => f.plant === plant)
+    .sort((a, b) => b.year - a.year || (b.modified || '').localeCompare(a.modified || ''));
+  if (!cands.length) { result.plants[plant] = { parsed: false, available: 0, reason: 'no parseable production file routed to this plant' }; continue; }
+  const best = cands[0];
+  result.plants[plant] = { parsed: true, source: best.name, modified: (best.modified || '').slice(0, 10), totals: best.totals, construction_mix: best.construction_mix, top_sizes: best.top_sizes, available: cands.length };
 }
 
 fs.writeFileSync(path.join(outDir, 'production-by-plant.json'), JSON.stringify(result, null, 2) + '\n');

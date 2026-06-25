@@ -51,21 +51,30 @@ const DOC_MIMES = new Set([
 // classify a file by its name → category the app understands
 function categorize(name) {
   const n = name.toLowerCase();
-  if (/daily.*(production|conclusion)|conclusion/.test(n)) return 'daily-production';
-  if (/production|pcr|\bpe\b/.test(n)) return 'production';
-  if (/claim|defective|defect|reject|waste|durabilit|qc\b/.test(n)) return 'quality';
-  if (/stock|inventory|closing balance|grn|raw.*(material|stock)|consumption/.test(n)) return 'stock';
+  if (/consumption/.test(n)) return 'stock';                          // consumption = material use, not production
+  if (/\bpe\b|oee|performance eval/.test(n)) return 'operations';     // 2026 PE = perf-eval, not production
+  if (/daily.*(production|conclusion)|conclusion|daily.*report/.test(n)) return 'daily-production';
+  // Plant A (Yangon) reports as ABR / Bias / Nylon — catch these as production
+  if (/bias.*production|yearly bias|\babr\b|nylon.*production|tyre production|production.*(wt|with wt|report)|monthly tyre|pcr.*production/.test(n)) return 'production';
+  if (/claim|defective|defect|reject|waste|durabilit|\bqc\b/.test(n)) return 'quality';
+  if (/stock|inventory|closing balance|grn|raw.*(material|stock)/.test(n)) return 'stock';
   if (/profit|loss|p&l|cash|costing|salary|payroll|finance/.test(n)) return 'finance';
   if (/order|sales|receivab|invoice|outstanding/.test(n)) return 'sales';
   if (/retailer|dealer|promotion address/.test(n)) return 'retailers';
   if (/curing|machine|maintenance|target/.test(n)) return 'operations';
+  if (/\bproduction\b/.test(n)) return 'production';
   return 'other';
 }
-// plant is seeded at the root and INHERITED; a clear in-path marker can still set it.
-function refinePlant(parts, inherited) {
+// Plant identity (owner ground-truth): Plant A = YANGON (bias/nylon/agricultural),
+// Plant B = BILIN (radial/MC). Folder location != data origin (SPT PC syncs Bilin's
+// radial reports into the "Plant A" Drive folder), so OWNER + content decide, not path.
+function refinePlant(parts, inherited, owner = '') {
+  const o = String(owner).toLowerCase();
+  if (o.includes('yangontyrefactory.bilin')) return 'plant-b';                       // Bilin = Plant B
+  if (o.includes('yangontyrefactory.spt') || o.includes('ytqc2019') || o.includes('ytpdoffice01')) return 'plant-a'; // Yangon = Plant A
   const joined = parts.join('/').toLowerCase();
-  if (/plant a\b|\/bilin\b/.test(joined)) return 'plant-a';
-  if (/plant b\b|\/spt\b/.test(joined)) return 'plant-b';
+  if (/\bplant[ -]?b\b|\/bilin\b/.test(joined)) return 'plant-b';
+  if (/\bplant[ -]?a\b/.test(joined)) return 'plant-a';
   return inherited || 'company';
 }
 const isSpreadsheet = (mime) => mime === XLSX_MIME || mime === SHEET_MIME;
@@ -92,7 +101,7 @@ async function crawl(folderId, parts, plantCtx, token, depth) {
       id = c.shortcutTargetId; mimeType = c.shortcutTargetMime || mimeType; resolved = true;
     }
     const childParts = [...parts, name];
-    const plant = refinePlant(childParts, plantCtx);
+    const plant = refinePlant(childParts, plantCtx, c.owner || '');
 
     if (mimeType === FOLDER_MIME) {
       if (SKIP_DEEP.test(name)) continue;
