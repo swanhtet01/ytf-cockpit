@@ -154,21 +154,29 @@ const JUNK = /\bsample\b|\bcopy of\b|_not order_|\btemplate\b|\btest\b|draft|\bo
 // full-period files (yearly/monthly summaries) beat weekly/daily/ABR partials for the headline figure
 const coverage = (n) => /yearly|annual|jan.*dec|monthly tyre|with wt/i.test(n) ? 3 : /monthly/i.test(n) ? 2 : /\babr\b|week|daily/i.test(n) ? 0 : 1;
 
-// parse EVERY downloaded production file; route by OWNER first, construction as fallback
+// candidate production files, best-first (full-period + latest year + freshest tried first)
+const candidates = (inv.files || [])
+  .filter((f) => f.category === 'production' && f.cache && !JUNK.test(f.name) && fs.existsSync(path.join(cacheRoot, f.cache.replace(/^scan[\\/]/, 'scan/'))))
+  .map((f) => ({ ...f, _full: path.join(cacheRoot, f.cache.replace(/^scan[\\/]/, 'scan/')), _cov: coverage(f.name), _yr: yearOf(f.name) }))
+  .sort((a, b) => b._cov - a._cov || b._yr - a._yr || (b.modifiedTime || '').localeCompare(a.modifiedTime || ''));
+
+const MAX_AI = Number(process.env.PROD_AI_MAX || 6); // bound Claude fallback calls per run
+let aiUsed = 0;
 const parsedFiles = [];
-for (const f of (inv.files || [])) {
-  if (f.category !== 'production' || !f.cache || JUNK.test(f.name)) continue;
-  const full = path.join(cacheRoot, f.cache.replace(/^scan[\\/]/, 'scan/'));
-  if (!fs.existsSync(full)) continue;
-  let p = await parseProduction(full);
-  if (p.error || !p.totals || !p.totals.produced) {
-    // structured parser failed (unrecognised layout / .xls) → AI fallback reads the grid
-    let sheets = null; try { ({ sheets } = await readSheet(full)); } catch {}
-    if (sheets) { const ai = await aiParseProduction(sheets, f.name); if (!ai.error && ai.totals?.produced) p = ai; }
+const havePlant = new Set();
+for (const f of candidates) {
+  let p = await parseProduction(f._full); // structured first (cheap, no AI)
+  if ((p.error || !p.totals?.produced)) {
+    const plantGuess = ownerPlant(f.owner); // skip AI if this plant already covered, or budget spent
+    if ((!plantGuess || !havePlant.has(plantGuess)) && aiUsed < MAX_AI) {
+      let sheets = null; try { ({ sheets } = await readSheet(f._full)); } catch {}
+      if (sheets) { aiUsed++; const ai = await aiParseProduction(sheets, f.name); if (!ai.error && ai.totals?.produced) p = ai; }
+    }
   }
-  if (p.error || !p.totals || !p.totals.produced) { if (p.error) console.error(`  · skip ${f.name.slice(0,40)}: ${p.error}`); continue; }
+  if (p.error || !p.totals || !p.totals.produced) continue;
   const plant = ownerPlant(f.owner) || (p.construction_mix.dominant === 'radial' ? 'plant-b' : 'plant-a');
-  parsedFiles.push({ name: f.name, modified: f.modifiedTime, year: yearOf(f.name), cover: coverage(f.name), plant, method: p.ai ? 'AI-read' : 'parsed', ...p });
+  havePlant.add(plant);
+  parsedFiles.push({ name: f.name, modified: f.modifiedTime, year: f._yr, cover: f._cov, plant, method: p.ai ? 'AI-read' : 'parsed', ...p });
 }
 
 for (const plant of ['plant-a', 'plant-b']) {

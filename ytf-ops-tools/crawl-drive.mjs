@@ -38,8 +38,8 @@ const SHEET_MIME = 'application/vnd.google-apps.spreadsheet';
 const SKIP_DEEP = /archived|industry literature|catalog|interview|recipe|^video|memory stip|^[a-z]:$|appdata|^onedrive|node_modules|^\.|program files|windows\b|roaming/i;
 const MAX_DEPTH = 6;         // reach deep subfolders (claims, sales, finance, daily)
 const MAX_NODES = 4000;      // folders+shortcuts visited
-const MAX_DOWNLOADS = 160;   // spreadsheets fetched per run
-const PER_BUCKET = 6;        // best N per (plant, category) to download
+const MAX_DOWNLOADS = 280;   // spreadsheets fetched per run (high enough that per-bucket picks never get truncated)
+const PER_BUCKET = 12;       // best N per (plant, category) to download — wide coverage so each plant's core production/stock/quality files reliably land
 
 // only catalogue operational file types — skip the thousands of Viber JPGs / videos / CAD
 const DOC_MIMES = new Set([
