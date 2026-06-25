@@ -27,6 +27,7 @@ const SEEDS = [
   { id: '1t94diZCYNQsXzoIhSJCwxRhoMeduARoH', path: ['Plant A'], plant: 'plant-a' },
   { id: '1CalHBhFysubqSx7-AbRBqaFIUxCI07cO', path: ['Plant B'], plant: 'plant-b' },
   { id: '1dIOhd04trNsMYn4OPrrj1K3qQwRCDP5E', path: ['CEO data'], plant: 'company' },
+  { id: '1Fewjoh89sofTi0JDHYIvznaWOFc0rZMY', path: ['Showroom PC'], plant: 'company' }, // sales/showroom mirror
 ];
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 const FOLDER_MIME = 'application/vnd.google-apps.folder';
@@ -35,10 +36,10 @@ const SHEET_MIME = 'application/vnd.google-apps.spreadsheet';
 
 // folders we don't care about for operations data (catalogued shallowly, not deep-crawled)
 const SKIP_DEEP = /archived|industry literature|catalog|interview|recipe|^video|memory stip|^[a-z]:$|appdata|^onedrive|node_modules|^\.|program files|windows\b|roaming/i;
-const MAX_DEPTH = 4;
-const MAX_NODES = 1800;      // folders+shortcuts visited
-const MAX_DOWNLOADS = 80;    // spreadsheets fetched per run
-const PER_BUCKET = 4;        // freshest N per (plant, category) to download
+const MAX_DEPTH = 6;         // reach deep subfolders (claims, sales, finance, daily)
+const MAX_NODES = 4000;      // folders+shortcuts visited
+const MAX_DOWNLOADS = 160;   // spreadsheets fetched per run
+const PER_BUCKET = 6;        // best N per (plant, category) to download
 
 // only catalogue operational file types — skip the thousands of Viber JPGs / videos / CAD
 const DOC_MIMES = new Set([
@@ -48,21 +49,27 @@ const DOC_MIMES = new Set([
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 ]);
 
-// classify a file by its name → category the app understands
+// classify a file by its name → category the app understands.
+// Order matters: more-specific rules first so e.g. "consumption" isn't swallowed by "production".
 function categorize(name) {
   const n = name.toLowerCase();
   if (/consumption/.test(n)) return 'stock';                          // consumption = material use, not production
   if (/\bpe\b|oee|performance eval/.test(n)) return 'operations';     // 2026 PE = perf-eval, not production
-  if (/daily.*(production|conclusion)|conclusion|daily.*report/.test(n)) return 'daily-production';
+  // daily PRODUCTION reports / shift conclusions — must be production-flavoured (anchor on production
+  // words) so "Daily Sales/Finance/Stock Report" don't get swallowed here
+  if (/daily.*(production|conclusion|tyre|output|cure|curing)|(production|tyre|shift).*conclusion|shift.*(production|output)|\bday.?book\b/.test(n)) return 'daily-production';
   // Plant A (Yangon) reports as ABR / Bias / Nylon — catch these as production
-  if (/bias.*production|yearly bias|\babr\b|nylon.*production|tyre production|production.*(wt|with wt|report)|monthly tyre|pcr.*production/.test(n)) return 'production';
-  if (/claim|defective|defect|reject|waste|durabilit|\bqc\b/.test(n)) return 'quality';
-  if (/stock|inventory|closing balance|grn|raw.*(material|stock)/.test(n)) return 'stock';
-  if (/profit|loss|p&l|cash|costing|salary|payroll|finance/.test(n)) return 'finance';
-  if (/order|sales|receivab|invoice|outstanding/.test(n)) return 'sales';
-  if (/retailer|dealer|promotion address/.test(n)) return 'retailers';
-  if (/curing|machine|maintenance|target/.test(n)) return 'operations';
-  if (/\bproduction\b/.test(n)) return 'production';
+  if (/bias.*production|yearly bias|\babr\b|nylon.*production|tyre production|production.*(wt|with wt)|monthly tyre|pcr.*production/.test(n)) return 'production';
+  // quality / claims / defects / waste / scrap — claim books are first-class quality records
+  if (/claim|defective|defect|reject|\bscrap\b|\bwaste\b|wastage|durabilit|\bqc\b|quality|complain|returned goods|warrant/.test(n)) return 'quality';
+  if (/stock|inventory|closing balance|\bgrn\b|raw.*(material|stock)|\bbom\b|store.*ledger|godown/.test(n)) return 'stock';
+  // finance: cash books, profit/loss, costing, payroll, expenses, bank, ledgers (anchor 'account'/'loss')
+  if (/profit|\bp&l\b|profit.*loss|cash.?book|\bcash\b|costing|salary|payroll|finance|expense|\bbank\b|voucher|\bledger\b|\baccount\b|petty/.test(n)) return 'finance';
+  // sales: sale invoices, orders, receivables, dispatch, delivery (anchor 'order' so "work/production order" stays out)
+  if (/sale.?invoice|\binvoice\b|sales?.?order|dealer.?order|\bsales?\b|receivab|outstanding|dispatch|\bdelivery\b|showroom|\bcustomer\b/.test(n)) return 'sales';
+  if (/retailer|dealer|distributor|promotion address|\bagent\b/.test(n)) return 'retailers';
+  if (/curing|machine|maintenance|\btarget\b|breakdown|downtime|utili[sz]ation/.test(n)) return 'operations';
+  if (/\bproduction\b|\boutput\b/.test(n)) return 'production';
   return 'other';
 }
 // Plant identity (owner ground-truth): Plant A = YANGON (bias/nylon/agricultural),
@@ -79,6 +86,16 @@ function refinePlant(parts, inherited, owner = '') {
 }
 const isSpreadsheet = (mime) => mime === XLSX_MIME || mime === SHEET_MIME;
 const safeName = (s) => s.replace(/[^\w.\- ]+/g, '_').replace(/\s+/g, ' ').trim().slice(0, 80);
+
+// Prefer full-period source files (yearly/monthly/annual rollups) over weekly/daily partials —
+// downstream generators get a richer base when they parse a full-period workbook. Higher = better.
+function periodScore(name) {
+  const n = name.toLowerCase();
+  if (/\byear(ly)?\b|\bannual\b|\bfy\s?\d|full.?period|whole.?year|\b12.?months?\b|jan\w*\s*[-–to]+\s*dec/.test(n)) return 3;
+  if (/\bmonth(ly)?\b|\bmtd\b/.test(n)) return 2;
+  if (/\bweek(ly)?\b|\bdaily\b|\bday\b/.test(n)) return 0; // partials — deprioritise vs a full-period file
+  return 1;
+}
 
 const manifest = [];
 const mediaCounts = {}; // plant -> {images, videos} (evidence indicators, not catalogued individually)
@@ -133,6 +150,12 @@ async function crawl(folderId, parts, plantCtx, token, depth) {
 }
 
 const main = async () => {
+  // Cloud-safe: if no service-account key is configured, this is a no-op (exit 0), not a failure —
+  // the crawl simply can't run without Drive auth (e.g. a preview deploy with no secret set).
+  if (!process.env.GOOGLE_SA_KEY && !process.env.GOOGLE_SA_KEY_FILE) {
+    console.log('crawl-drive — no GOOGLE_SA_KEY / GOOGLE_SA_KEY_FILE set; skipping crawl (exit 0).');
+    return;
+  }
   const token = await getAccessToken();
   console.log(`crawl-drive — walking operational subtrees …`);
   // top-level company sheets (shallow — don't recurse the noisy root)
@@ -163,10 +186,18 @@ const main = async () => {
   }
   const toGet = [];
   for (const k of Object.keys(buckets)) {
-    buckets[k].sort((a, b) => (b.modifiedTime || '').localeCompare(a.modifiedTime || ''));
+    // within a bucket: prefer full-period files, then freshest — so a yearly rollup beats a daily partial
+    buckets[k].sort((a, b) =>
+      (periodScore(b.name) - periodScore(a.name)) ||
+      (b.modifiedTime || '').localeCompare(a.modifiedTime || ''));
     toGet.push(...buckets[k].slice(0, PER_BUCKET));
   }
-  toGet.sort((a, b) => (b.modifiedTime || '').localeCompare(a.modifiedTime || ''));
+  // global cap: keep the FRESHEST across all buckets (period preference already applied per-bucket
+  // above, so full-period files are at each bucket's top). Sorting period-primary here would let
+  // stale yearly files (1006 candidates >> 160 cap) displace fresh monthly/daily files at the cut.
+  toGet.sort((a, b) =>
+    (b.modifiedTime || '').localeCompare(a.modifiedTime || '') ||
+    (periodScore(b.name) - periodScore(a.name)));
   toGet.splice(MAX_DOWNLOADS);
 
   let ok = 0;
@@ -191,9 +222,44 @@ const main = async () => {
     }
   }
 
-  // summary by plant + category for quick sanity
+  // flat "plant/category" -> count (kept for backward compatibility with existing consumers)
   const by = {};
   for (const m of manifest) { const k = `${m.plant}/${m.category}`; by[k] = (by[k] || 0) + 1; }
+
+  // richer nested summary: plant -> { total, spreadsheets, downloaded, categories:{cat:count} }
+  // so downstream generators can read coverage per plant without re-scanning the full manifest.
+  const summary = {};
+  for (const m of manifest) {
+    const s = summary[m.plant] = summary[m.plant] || { total: 0, spreadsheets: 0, downloaded: 0, categories: {} };
+    s.total++;
+    if (m.spreadsheet) s.spreadsheets++;
+    if (m.cache) s.downloaded++;
+    s.categories[m.category] = (s.categories[m.category] || 0) + 1;
+  }
+
+  // per (plant, category) freshest-file list — the single BEST source per category, so a generator
+  // can pick the right workbook without guessing. "best" = full-period first, then freshest, then
+  // prefer ones we actually downloaded (have a local cache). Top 3 per bucket.
+  const freshest_by_plant_category = {};
+  const fbpc = {};
+  for (const m of manifest) {
+    if (!want.has(m.category)) continue; // operational categories only — skip 'other'/'operations' noise
+    const k = `${m.plant}/${m.category}`;
+    (fbpc[k] = fbpc[k] || []).push(m);
+  }
+  for (const k of Object.keys(fbpc)) {
+    freshest_by_plant_category[k] = fbpc[k]
+      .sort((a, b) =>
+        (Number(!!b.cache) - Number(!!a.cache)) ||
+        (periodScore(b.name) - periodScore(a.name)) ||
+        (b.modifiedTime || '').localeCompare(a.modifiedTime || ''))
+      .slice(0, 3)
+      .map((m) => ({
+        fileId: m.fileId, name: m.name, category: m.category, plant: m.plant,
+        modifiedTime: m.modifiedTime || '', spreadsheet: m.spreadsheet,
+        cache: m.cache || null, period_score: periodScore(m.name),
+      }));
+  }
 
   const inv = {
     generated_at: new Date().toISOString(),
@@ -202,10 +268,16 @@ const main = async () => {
     downloaded: ok,
     folders_visited: nodes,
     by_plant_category: by,
+    summary,
+    freshest_by_plant_category,
     media_counts: mediaCounts,
     files: manifest,
   };
   fs.writeFileSync(path.join(DATA, 'drive-inventory.json'), JSON.stringify(inv, null, 2));
+  for (const [p, s] of Object.entries(summary)) {
+    const cats = Object.entries(s.categories).filter(([c]) => c !== 'other').map(([c, v]) => `${c}:${v}`).join(' ');
+    console.log(`  ${p.padEnd(9)} ${String(s.total).padStart(4)} files · ${s.spreadsheets} sheets · ${s.downloaded} cached · ${cats}`);
+  }
   console.log(`crawl-drive — ${ok}/${toGet.length} spreadsheets downloaded; manifest → data/drive-inventory.json`);
   if (manifest.length === 0) process.exit(1);
 };
