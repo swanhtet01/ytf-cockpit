@@ -20,6 +20,54 @@ function ownerPlant(owner) {
   return null;
 }
 
+// AI fallback: when the regex parser can't read a layout (bias .xls, daily-conclusion, etc.),
+// let Claude read the actual cell grid and return clean per-size production. Layout-agnostic.
+async function aiParseProduction(sheets, fileName) {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) return { error: 'no AI key' };
+  // compact the workbook to a token-bounded TSV (biggest/summary sheets first)
+  const ordered = [...sheets].sort((a, b) => (/total|summary|year|annual/i.test(b.name) ? 1e6 : b.rows.length) - (/total|summary|year|annual/i.test(a.name) ? 1e6 : a.rows.length));
+  let budget = 9000; const parts = [];
+  for (const s of ordered.slice(0, 3)) {
+    if (budget <= 0) break;
+    const rows = s.rows.slice(0, 70).map((r) => (r || []).slice(0, 16).map((c) => String(c == null ? '' : c).slice(0, 18)).join('\t'));
+    const blk = `# Sheet: ${s.name}\n${rows.join('\n')}`.slice(0, budget);
+    parts.push(blk); budget -= blk.length;
+  }
+  const prompt = `Read this tyre-factory production workbook ("${fileName}") and return ONLY JSON with the TOTAL tyres produced by size for the period it covers:
+{"period":"e.g. Jan-May 2026 / 2026 YTD / null","total_produced":number,"grade_a_pct":number|null,"sizes":[{"size":"e.g. 8.25/9.00-16 or 145R12C","total":number,"grade_a":number|null}]}
+Rules: read Burmese. "A"=grade-A(good), "B"=grade-B, "R"=reject. total = A+B+R per size if not given. Sum only real production rows (skip headers/subtotals/percentage rows). grade_a_pct = 100*sumA/sumTotal. If you cannot find a production table, return {"total_produced":0,"sizes":[]}. Numbers only, no commas/units.
+
+WORKBOOK:
+${parts.join('\n\n')}`;
+  let res;
+  try {
+    res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: process.env.PROD_AI_MODEL || 'claude-sonnet-4-6', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] }),
+    });
+  } catch (e) { return { error: 'ai fetch: ' + e.message }; }
+  if (!res.ok) return { error: `ai ${res.status}` };
+  const j = await res.json();
+  const t = (j.content || []).map((c) => c.text || '').join('');
+  const m = t.match(/\{[\s\S]*\}/); if (!m) return { error: 'ai no json' };
+  let d; try { d = JSON.parse(m[0]); } catch { return { error: 'ai parse' }; }
+  const sizes = (d.sizes || []).filter((s) => s.size && Number(s.total) > 0);
+  const produced = Number(d.total_produced) || sizes.reduce((a, s) => a + (Number(s.total) || 0), 0);
+  if (!produced) return { error: 'ai found no production' };
+  const gradeA = d.grade_a_pct != null ? Number(d.grade_a_pct) : null;
+  if (gradeA != null && (gradeA < 40 || gradeA > 100)) return { error: `ai implausible grade ${gradeA}%` };
+  const radialVol = sizes.filter((s) => parseTyreSize(s.size).construction === 'radial').reduce((a, s) => a + (Number(s.total) || 0), 0);
+  const biasVol = sizes.filter((s) => parseTyreSize(s.size).construction === 'bias').reduce((a, s) => a + (Number(s.total) || 0), 0);
+  return {
+    ai: true,
+    period_hint: d.period || null,
+    totals: { produced, grade_a_pct: gradeA, active_sizes: sizes.length, total_weight_mt: 0 },
+    construction_mix: { radial: radialVol, bias: biasVol, dominant: radialVol >= biasVol ? 'radial' : 'bias' },
+    top_sizes: sizes.map((s) => ({ size: s.size, total: Number(s.total) || 0, a: Number(s.grade_a) || 0, b: 0, r: 0, weight_kg: 0 })).sort((a, b) => b.total - a.total).slice(0, 12),
+  };
+}
+
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 const outDir = path.join(DIR, 'out');
 fs.mkdirSync(outDir, { recursive: true });
@@ -112,10 +160,15 @@ for (const f of (inv.files || [])) {
   if (f.category !== 'production' || !f.cache || JUNK.test(f.name)) continue;
   const full = path.join(cacheRoot, f.cache.replace(/^scan[\\/]/, 'scan/'));
   if (!fs.existsSync(full)) continue;
-  const p = await parseProduction(full);
+  let p = await parseProduction(full);
+  if (p.error || !p.totals || !p.totals.produced) {
+    // structured parser failed (unrecognised layout / .xls) → AI fallback reads the grid
+    let sheets = null; try { ({ sheets } = await readSheet(full)); } catch {}
+    if (sheets) { const ai = await aiParseProduction(sheets, f.name); if (!ai.error && ai.totals?.produced) p = ai; }
+  }
   if (p.error || !p.totals || !p.totals.produced) { if (p.error) console.error(`  · skip ${f.name.slice(0,40)}: ${p.error}`); continue; }
   const plant = ownerPlant(f.owner) || (p.construction_mix.dominant === 'radial' ? 'plant-b' : 'plant-a');
-  parsedFiles.push({ name: f.name, modified: f.modifiedTime, year: yearOf(f.name), cover: coverage(f.name), plant, ...p });
+  parsedFiles.push({ name: f.name, modified: f.modifiedTime, year: yearOf(f.name), cover: coverage(f.name), plant, method: p.ai ? 'AI-read' : 'parsed', ...p });
 }
 
 for (const plant of ['plant-a', 'plant-b']) {
@@ -124,8 +177,8 @@ for (const plant of ['plant-a', 'plant-b']) {
     .sort((a, b) => b.cover - a.cover || b.year - a.year || (b.modified || '').localeCompare(a.modified || ''));
   if (!cands.length) { result.plants[plant] = { parsed: false, available: 0, reason: 'no reliable production file (unreadable or implausible parse)' }; continue; }
   const best = cands[0];
-  const period = best.cover >= 3 ? `full-year ${best.year || ''}`.trim() : best.cover === 2 ? `monthly ${best.year || ''}`.trim() : 'partial (latest report)';
-  result.plants[plant] = { parsed: true, source: best.name, period, modified: (best.modified || '').slice(0, 10), totals: best.totals, construction_mix: best.construction_mix, top_sizes: best.top_sizes, available: cands.length };
+  const period = best.period_hint || (best.cover >= 3 ? `full-year ${best.year || ''}`.trim() : best.cover === 2 ? `monthly ${best.year || ''}`.trim() : 'latest report');
+  result.plants[plant] = { parsed: true, source: best.name, period, method: best.method || 'parsed', modified: (best.modified || '').slice(0, 10), totals: best.totals, construction_mix: best.construction_mix, top_sizes: best.top_sizes, available: cands.length };
 }
 
 fs.writeFileSync(path.join(outDir, 'production-by-plant.json'), JSON.stringify(result, null, 2) + '\n');
