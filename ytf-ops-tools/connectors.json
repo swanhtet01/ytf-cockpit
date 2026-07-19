@@ -4,7 +4,7 @@
   "connectors": [
     {
       "id": "monthly-production", "type": "drive", "status": "live",
-      "fileId": "1Oprx19I-OXe0Lh14LAXHfQoj4mU84mxv", "cache": "Monthly Tyre Production 2026.xlsx",
+      "fileId": "1vS1EcOYvki5k6x_l5L5Nl_e-pWJibTlo", "cache": "Monthly Tyre Production 2026.xlsx",
       "owner": "yangontyrefactory.bilin@gmail.com", "consumed_by": "production.mjs, production-mc.mjs"
     },
     {
@@ -14,13 +14,33 @@
     },
     {
       "id": "raw-stock-detail", "type": "drive", "status": "live",
-      "fileId": "1M6mciqlCB-CeyuGuicj9AGhMc61KiwAA", "cache": "Raw Stock Detail June 2026.xlsx",
+      "fileId": "1UWC1wmU6SenV1IqBJKues5vnEMoQMgcg", "cache": "Raw Stock Detail July 2026.xlsx",
       "owner": "ytpdoffice01@gmail.com", "consumed_by": "stock-balance.mjs (alt)"
     },
     {
       "id": "daily-production", "type": "drive", "status": "live",
       "fileId": "1nNsxMnZychBmtRtFtEZhkxzj7044o5Y3", "cache": "Tyre Production Daily Report 2026.xlsx",
       "owner": "yangontyrefactory.bilin@gmail.com", "consumed_by": "daily-production.mjs"
+    },
+    {
+      "id": "sales-ledger-mc", "type": "drive", "status": "live",
+      "fileId": "1TJKKZvduKqu5MfG6ml6o5wGjbTxIdhva", "cache": "All Ledger MC 2026.xlsx",
+      "owner": "yangontyrefactory.spt@gmail.com", "consumed_by": "galaxy-orders.mjs"
+    },
+    {
+      "id": "sales-ledger-radial", "type": "drive", "status": "live",
+      "fileId": "1eaS3rX6SRocyuSldzqeHz19FNmYpFBwc", "cache": "All Ledger Radial 2026.xlsx",
+      "owner": "yangontyrefactory.spt@gmail.com", "consumed_by": "galaxy-orders.mjs"
+    },
+    {
+      "id": "sales-ledger-nylon", "type": "drive", "status": "live",
+      "fileId": "1KTzhF-hQuoxiwWkiN81GB-MH6kulgBW4", "cache": "All Ledger Nylon 2026.xlsx",
+      "owner": "yangontyrefactory.spt@gmail.com", "consumed_by": "galaxy-orders.mjs"
+    },
+    {
+      "id": "manager-forms", "type": "drive", "status": "live",
+      "fileId": "1x3ts8E7f-FcGCox0h5jCll2aUVOuhNH0", "cache": "All Form.xlsx",
+      "owner": "ytpdoffice01@gmail.com", "consumed_by": "manual-entries.mjs (next adapter)"
     },
     {
       "id": "finance-pl", "type": "drive", "status": "unshared",

@@ -4,7 +4,7 @@
   "files": [
     {
       "role": "tyre-production",
-      "fileId": "1Oprx19I-OXe0Lh14LAXHfQoj4mU84mxv",
+      "fileId": "1vS1EcOYvki5k6x_l5L5Nl_e-pWJibTlo",
       "title": "Monthly Tyre Production 2026.xlsx",
       "owner": "yangontyrefactory.bilin@gmail.com",
       "cache": "Monthly Tyre Production 2026.xlsx",
@@ -20,11 +20,43 @@
     },
     {
       "role": "raw-stock-balance-detailed",
-      "fileId": "16iGeLhZawhl0tKSKCUhuOqG1KsP4EVTy",
-      "title": "( 2 )Monthly Raw Stock Balance 2026.xlsx",
+      "fileId": "1UWC1wmU6SenV1IqBJKues5vnEMoQMgcg",
+      "title": "( 7 ) Raw Stock Detail  July 2026.xlsx",
       "owner": "ytpdoffice01@gmail.com",
-      "cache": "Monthly Raw Stock Balance 2026.xlsx",
-      "consumed_by": "stock-balance.mjs (alt, larger/newer)"
+      "cache": "Raw Stock Detail July 2026.xlsx",
+      "consumed_by": "stock-balance.mjs (alt, current raw-material detail)"
+    },
+    {
+      "role": "sales-ledger-mc",
+      "fileId": "1TJKKZvduKqu5MfG6ml6o5wGjbTxIdhva",
+      "title": "All Ledger(MC.2026).xlsx",
+      "owner": "yangontyrefactory.spt@gmail.com",
+      "cache": "All Ledger MC 2026.xlsx",
+      "consumed_by": "galaxy-orders.mjs"
+    },
+    {
+      "role": "sales-ledger-radial",
+      "fileId": "1eaS3rX6SRocyuSldzqeHz19FNmYpFBwc",
+      "title": "All Ledger (Radial-2026).xlsx",
+      "owner": "yangontyrefactory.spt@gmail.com",
+      "cache": "All Ledger Radial 2026.xlsx",
+      "consumed_by": "galaxy-orders.mjs"
+    },
+    {
+      "role": "sales-ledger-nylon",
+      "fileId": "1KTzhF-hQuoxiwWkiN81GB-MH6kulgBW4",
+      "title": "All Ledger (Nylon.2026).xlsx",
+      "owner": "yangontyrefactory.spt@gmail.com",
+      "cache": "All Ledger Nylon 2026.xlsx",
+      "consumed_by": "galaxy-orders.mjs"
+    },
+    {
+      "role": "manager-forms",
+      "fileId": "1x3ts8E7f-FcGCox0h5jCll2aUVOuhNH0",
+      "title": "All Form.xlsx",
+      "owner": "ytpdoffice01@gmail.com",
+      "cache": "All Form.xlsx",
+      "consumed_by": "manual-entries.mjs (next adapter)"
     },
     {
       "role": "retailer-database",

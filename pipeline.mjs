@@ -129,6 +129,9 @@ const procSorted = [...procurement].sort((a, b) => Number(a.tft_ref || 0) - Numb
 const latestTft = last(procSorted);
 const rawLatest = [...rawmat].sort(byDateDesc)[0];
 const claimsNeedingReply = (summary.claims?.by_status?.rejected || 0) + (summary.claims?.by_status?.partial || 0);
+const salesOrders = orders || null;
+const salesTotals = salesOrders?.totals || {};
+const receivableTotals = salesOrders?.receivables?.totals || {};
 
 // --- headline (what the YTF Ops card shows) ---
 const headline = {
@@ -145,6 +148,11 @@ const headline = {
   dealers: retailers?.totals?.dealers || 0,
   retailer_regions: retailers?.by_region?.length || 0,
   distribution_sales_b: retailers?.totals?.total_amount ? +(retailers.totals.total_amount / 1e9).toFixed(2) : 0,
+  sales_rows: salesOrders?.order_count || 0,
+  sales_qty: salesTotals.qty || 0,
+  sales_amount_b: salesTotals.amount ? +(salesTotals.amount / 1e9).toFixed(2) : 0,
+  receivables_b: receivableTotals.outstanding ? +(receivableTotals.outstanding / 1e9).toFixed(2) : 0,
+  overdue_60_b: receivableTotals.overdue_60plus ? +(receivableTotals.overdue_60plus / 1e9).toFixed(2) : 0,
   top_region: retailers?.by_region?.[0]?.key || '',
   materials_in_transit: inventory?.totals?.in_transit_shipments || 0,
   materials_in_transit_mt: inventory?.totals?.in_transit_mt || 0,
@@ -188,6 +196,9 @@ if (latestTft) {
 if (retailers?.totals?.dealers) {
   const t = retailers.totals;
   alerts.push(`Distribution: ${t.dealers} dealers · ${(t.total_amount / 1e9).toFixed(1)}B Kyat · ${t.nylon_share_pct}% nylon / ${t.radial_share_pct}% radial${retailers.sample ? ' (H2-2024 sample)' : ''}.`);
+}
+if (salesOrders?.order_count) {
+  alerts.push(`Sales ledger: ${salesOrders.order_count.toLocaleString()} rows - ${(salesTotals.amount / 1e9).toFixed(1)}B Kyat booked - ${(receivableTotals.outstanding / 1e9).toFixed(1)}B open receivables.`);
 }
 // inventory: reorder flags first (most actionable), then a compact in-transit summary
 (inventory?.materials || []).filter((m) => m.reorder_flag).forEach((m) =>
