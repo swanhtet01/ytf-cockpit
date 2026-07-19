@@ -36,6 +36,7 @@ if (!fs.existsSync(inPath)) { console.error('daily-production: no Daily Report w
 const norm = (s) => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
 const lc = (s) => norm(s).toLowerCase();
 const n = (v) => parseNum(v, 0);
+const whole = (v) => Number.isFinite(Number(v)) && Math.abs(Number(v) - Math.round(Number(v))) < 0.001;
 
 let sheets = [];
 try { ({ sheets } = readXlsx(inPath)); } catch (e) { console.error(`daily-production: cannot read (${e.message})`); process.exit(0); }
@@ -112,6 +113,7 @@ function daySizeRows(s, date) {
     if (!size) continue;
     const counts = parseProductionCount(row, c);
     if (counts.total <= 0 || counts.a <= 0) continue;
+    if (![counts.a, counts.b, counts.reject, counts.total].every(whole)) continue;
     if (/^total$/i.test(size) || /percentage|percent/i.test(size)) continue;
     rows.push({
       date,
