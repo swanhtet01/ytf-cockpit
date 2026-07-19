@@ -40,7 +40,7 @@
     {
       "id": "manager-forms", "type": "drive", "status": "live",
       "fileId": "1x3ts8E7f-FcGCox0h5jCll2aUVOuhNH0", "cache": "All Form.xlsx",
-      "owner": "ytpdoffice01@gmail.com", "consumed_by": "manual-entries.mjs (next adapter)"
+      "owner": "ytpdoffice01@gmail.com", "consumed_by": "manager-forms.mjs -> manual-entries.mjs"
     },
     {
       "id": "finance-pl", "type": "drive", "status": "unshared",

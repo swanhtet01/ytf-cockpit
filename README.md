@@ -25,6 +25,8 @@ your phone  ──>  supermega-remote (this project)  ──>  supermega-ytf (li
   claims, procurement, dealers, sizes, signals, sources, finance). No LLM, no API key.
 - **Data entry / whiteboard** — `/entry.html`: capture claims, production, sales, 5W1H/CAPA,
   downtime→OEE, safety incidents on the device; export CSV/JSON to merge back via `node refresh.mjs`.
+- **Manager form ingestion** — `manager-forms.mjs` reads the live `manager-forms` Drive workbook
+  during refresh, promotes only current operational rows into captures, and excludes HR/contact/admin sheets.
 - **Installable** — "Add to Home Screen" gives a full-screen PWA.
 
 ## Structured data (the Ops layer)
@@ -45,7 +47,8 @@ The panel doesn't just *trigger* the pipeline — it also *reads* what the pipel
   cd "supermega-remote"
   node refresh.mjs
   # extract -> drive-sources -> sites -> retailers -> inventory -> stock-balance ->
-  # production -> daily-production -> finance -> insights -> trends -> quality -> pipeline
+  # production -> daily-production -> finance -> manager-forms -> manual-entries ->
+  # insights -> trends -> quality -> pipeline
   ```
   `sync.ps1` does `refresh.mjs` + deploy + re-alias in one command. It defaults to
   `ops.supermega.dev` and refuses `ytf.supermega.dev`; the YTF ERP domain belongs to the

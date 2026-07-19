@@ -64,7 +64,7 @@
       "title": "All Form.xlsx",
       "owner": "ytpdoffice01@gmail.com",
       "cache": "All Form.xlsx",
-      "consumed_by": "manual-entries.mjs (next adapter)"
+      "consumed_by": "manager-forms.mjs -> manual-entries.mjs"
     },
     {
       "role": "retailer-database",

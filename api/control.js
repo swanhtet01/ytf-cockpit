@@ -148,6 +148,22 @@ function pickKeys(obj, keys) {
 // scrub email-text references from any free-text array (alerts, insights signal titles/details)
 function scrubEmailText(arr) { return Array.isArray(arr) ? arr.filter((a) => !EMAIL_TEXT_RE.test(String(a && a.title ? a.title + ' ' + (a.detail || '') : a))) : arr; }
 
+function scopedRecords(records, groups) {
+  if (!Array.isArray(records) || groups.includes('*')) return records;
+  const allowed = new Set(groups);
+  const canonical = (value) => {
+    const v = String(value || '').toLowerCase();
+    if (/plant[-\s]?b|bilin/.test(v)) return 'plant-b';
+    if (/plant[-\s]?a|spt|yangon/.test(v)) return 'plant-a';
+    if (/head|office|company/.test(v)) return 'head-office';
+    return value || '';
+  };
+  return records.filter((r) => {
+    const group = canonical(r?.group || r?.plant || r?.fields?.group || r?.fields?.plant || '');
+    return !group || allowed.has(group);
+  });
+}
+
 function redactForRole(file, json, who) {
   const cap = capFor(who.role);
   const groups = who.groups || [];
@@ -162,6 +178,12 @@ function redactForRole(file, json, who) {
       json.viber.count = json.viber.records.length;
     }
   }
+  if (json && json.captures && Array.isArray(json.captures.records) && !groups.includes('*')) {
+    json.captures.records = scopedRecords(json.captures.records, groups);
+    json.captures.count = json.captures.records.length;
+    json.captures.open_action_count = json.captures.records.filter((r) => r.open).length;
+    json.captures.by_kind = json.captures.records.reduce((a, r) => ((a[r.kind] = (a[r.kind] || 0) + 1), a), {});
+  }
 
   if (cap.email) return json;   // CEO with limited groups: keep email, just viber-scoped
 
@@ -172,6 +194,12 @@ function redactForRole(file, json, who) {
     clean.alerts = scrubEmailText(json.alerts);
     if (clean.insights && Array.isArray(clean.insights.signals)) {
       clean.insights = { ...clean.insights, signals: scrubEmailText(clean.insights.signals) };
+    }
+    if (clean.captures && Array.isArray(clean.captures.records)) {
+      clean.captures = { ...clean.captures, records: scopedRecords(clean.captures.records, groups) };
+      clean.captures.count = clean.captures.records.length;
+      clean.captures.open_action_count = clean.captures.records.filter((r) => r.open).length;
+      clean.captures.by_kind = clean.captures.records.reduce((a, r) => ((a[r.kind] = (a[r.kind] || 0) + 1), a), {});
     }
     return clean;
   }

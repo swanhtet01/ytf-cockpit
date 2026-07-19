@@ -16,6 +16,13 @@ fs.mkdirSync(outDir, { recursive: true });
 
 const records = [];
 const files = fs.existsSync(inDir) ? fs.readdirSync(inDir).filter((f) => f.toLowerCase().endsWith('.json')) : [];
+function canonicalGroup(value) {
+  const v = String(value || '').toLowerCase();
+  if (/plant[-\s]?b|bilin/.test(v)) return 'plant-b';
+  if (/plant[-\s]?a|spt|yangon/.test(v)) return 'plant-a';
+  if (/head|office|company/.test(v)) return 'head-office';
+  return value || null;
+}
 for (const f of files) {
   let doc; try { doc = JSON.parse(fs.readFileSync(path.join(inDir, f), 'utf8')); } catch { continue; }
   if (!doc || typeof doc !== 'object') continue;                     // null / primitive — skip cleanly
@@ -30,11 +37,16 @@ for (const f of files) {
     const owner = fields.who || fields.owner || fields.assigned_to || null;
     const due = fields.due || fields.due_date || null;
     const status = (fields.status || '').toLowerCase() || null;
+    const plant = r.plant || fields.plant || (/plant\s*b|bilin/i.test(String(fields.area || fields.site || '')) ? 'plant-b'
+      : /plant\s*a|spt|yangon/i.test(String(fields.area || fields.site || '')) ? 'plant-a' : null);
+    const group = canonicalGroup(r.group || fields.group || plant || fields.plant || fields.site || null);
     // is this an actionable record (CAPA / corrective work)? 5W1H, NCR, incident, downtime, claim follow-up
     const actionable = /5w1h|ncr|capa|incident|downtime|safety/.test(kind) || !!(owner || due || (status && status !== 'closed' && status !== 'verified'));
     records.push({
       kind, date,
       via: r.captured_via || (doc.image ? 'whiteboard-ocr' : 'entry'),
+      group, plant,
+      department: r.department || fields.department || null,
       image: r.image || doc.image || null,
       confidence: r.confidence ?? null,
       owner, due, status,

@@ -7,7 +7,7 @@
 //      stock-balance, production, production-mc, daily-production,│
 //      finance, galaxy-orders)                                 ─┘
 //   3) LLM captures (whiteboard-ocr, viber-pull, viber-ingest) — sequential, after group A
-//   4) manual-entries                                          — after captures
+//   4) manager-forms + manual-entries                          — after captures
 //   5) insights, trends, quality                              ─ parallel group B
 //   6) pipeline.mjs                                           — assembles final JSON
 //
@@ -86,6 +86,7 @@ if (!noLlm) {
 
 // ── Stage 3: Normalize all captures ─────────────────────────────────────────────
 console.log('\n[3/4] Normalise + cross-module analysis (parallel)…');
+await run(o('manager-forms.mjs'));
 await run(o('manual-entries.mjs'));
 await parallel([
   [o('insights.mjs'),           [], opsDir, 'insights'],
