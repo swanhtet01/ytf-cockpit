@@ -10,7 +10,7 @@
 ## Next
 - Add `action==='whoami'` to control.js and return role+allowed groups in the `jobs` response (line 169) so index.html loadJobs() (line 277/433) hides job cards and ops.html sections the role can't use, layered on the existing MOD() toggles.
 - Build the scrap/reject Pareto by size+mould (use the new parser over production.json a/b/r fields) and feed it into quality.mjs's IATF 8.7 off-grade KPI (line 52), which is currently plant-level only — turns one flat number into a ranked defect register.
-- Persist the per-size daily rows in daily-production.mjs (currently parsed in dayTotal() then discarded at lines 68-82, only the grand-total row survives) to produce a size-level daily attainment/off-grade series.
+- Use the newly emitted `daily-production.json#by_size` and `#by_day_size` rows in the ERP and quality views for size-level daily attainment, grade mix, and off-grade series.
 - Add write helpers to ytf-ops-tools/lib/connectors.mjs (addConnector / setStatus / resolveDriveFileId) so connectors.json stops being hand-edited — the prerequisite for any self-serve setup, then add a `setup` action to control.js (or new api/setup.js) that connects a source, runs the existing supermega-remote/refresh.mjs, and returns a live preview before deploy.
 - Add empirical kg-per-tyre BOM coefficients (stock-balance monthly_consumption / production produced) and forecast ingredient burn off daily.mtd pace — extends the days-to-stockout logic in insights.mjs lines 33-61 from reactive to predictive.
 

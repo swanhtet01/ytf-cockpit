@@ -13,7 +13,9 @@ import { pullableDrive } from './lib/connectors.mjs';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 const CACHE = path.join(DIR, 'data', 'drive-cache');
+const OUT = path.join(DIR, 'out');
 fs.mkdirSync(CACHE, { recursive: true });
+fs.mkdirSync(OUT, { recursive: true });
 
 // Drive sources come from the connectors hub (connectors.json), not hardcoded here.
 const FILES = pullableDrive().map((c) => ({ role: c.id, id: c.fileId, cache: c.cache }));
@@ -23,6 +25,7 @@ const XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 const main = async () => {
   const token = await getAccessToken();
   let ok = 0;
+  const sources = [];
   for (const f of FILES) {
     try {
       const meta = await fileMeta(f.id, token);
@@ -31,12 +34,31 @@ const main = async () => {
       if (bytes.slice(0, 2).toString('hex') !== '504b') throw new Error('not a zip/xlsx (got ' + bytes.slice(0, 8).toString('hex') + ')');
       fs.writeFileSync(path.join(CACHE, f.cache), bytes);
       ok++;
+      sources.push({
+        id: f.role,
+        area: f.role.replace(/-/g, ' '),
+        status: 'ok',
+        modified: meta.modifiedTime?.slice(0, 10) || '',
+        bytes: bytes.length,
+        mimeType: meta.mimeType || '',
+      });
       console.log(`  ✓ ${f.role.padEnd(20)} ${meta.modifiedTime?.slice(0, 10) || '?'}  ${(bytes.length / 1024).toFixed(0)}KB  -> ${f.cache}`);
     } catch (e) {
+      sources.push({
+        id: f.role,
+        area: f.role.replace(/-/g, ' '),
+        status: 'error',
+        error: e.message,
+      });
       console.error(`  ✗ ${f.role.padEnd(20)} ${e.message}`);
     }
   }
   console.log(`pull-drive — ${ok}/${FILES.length} files refreshed into data/drive-cache/`);
+  fs.writeFileSync(path.join(OUT, 'source-freshness.json'), JSON.stringify({
+    generated_at: new Date().toISOString(),
+    sources,
+    by_id: Object.fromEntries(sources.map((source) => [source.id, source])),
+  }, null, 2) + '\n');
   if (ok === 0) process.exit(1);
 };
 

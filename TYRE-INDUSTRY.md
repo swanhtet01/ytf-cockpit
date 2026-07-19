@@ -6,7 +6,7 @@ I read all six modules plus the live `out/*.json`. The parsed data is richer tha
 
 1. **Size strings are structured spec, not free text.** `production.json#top_sizes[].size` carries: construction (`R` = radial vs `-` = bias/diagonal), rim diameter (12/13/14/15/17), section width / aspect ratio (`185/70`), ply-rating (`6-PR`), application tag (`Premier Taxi`), and **mould-pattern code** (`YT-123`, `YT-312`). All recoverable with one regex.
 2. **The compound BOM ingredients are already itemized** in `stock-balance.json#materials` (86 lines) with `opening/received/consumption/closing/monthly_consumption` each: rubbers (RSS-1, MSR-20, SBR-1502/1712, KBR/BR-150, reclaim, butyl/CIIR, chloroprene), carbon black N220/N330/N660, zinc oxide, sulphur, accelerators (TBBS, MBTS/DM, PVI), antidegradants (6PPD, TMQ, anti-ozone wax), oils, resins, **bead wire (2 gauges), steel cord (3 specs), nylon/polyester cord (multiple deniers)**, and — critically — **curing bladders itemized by press/size** (`MC Bladder 17/7.21`, `Bladder RB-1951`, `RB-1451 (12")`, `B35010`), plus mould cleaning sand and internal release agent.
-3. **Per-day target vs actual exists** (`daily-production.json#by_day`), and the raw daily sheet has **per-size-per-day** rows (`daily-production.mjs` currently rolls up only the day grand-total — line 68-82 — so per-size daily is parsed-but-discarded).
+3. **Per-day target vs actual exists** (`daily-production.json#by_day`), and the daily parser now emits **per-size-per-day** rows (`daily-production.json#by_day_size`) plus current-month size totals (`daily-production.json#by_size`). This is the freshest production drill-through signal when the Drive refresh has a current workbook.
 
 Below, ranked by value/effort. "Have" = computable today from existing JSON; "almost" = one parser tweak or a small static lookup; "missing" = needs a new feed.
 
@@ -53,8 +53,8 @@ Below, ranked by value/effort. "Have" = computable today from existing JSON; "al
 - **Cockpit module:** suggested next-run sequence that minimizes mould changeovers while covering the top-selling sizes and respecting bladder stock (e.g. don't schedule a 17" MC run when `MC Bladder 17/7.21` is at 0.3mo).
 - **Decision:** the daily/weekly production-planning sequence — ties product mix, mould, and consumable availability together.
 
-**8. Per-size daily trend (already parsed, currently discarded)**
-- **Data:** HAVE. `daily-production.mjs` reads per-size rows but only keeps the day grand-total (lines 68-82). Persist the per-size lines and we get a daily size-level attainment + off-grade series for free.
+**8. Per-size daily trend (now emitted by the daily parser)**
+- **Data:** HAVE. `daily-production.mjs` emits `by_day_size` and `by_size`, so the ERP can show current-month output by plant/line/size, target attainment, grade-A %, and off-grade without waiting for the month-close production workbook.
 - **Cockpit module:** size-level run-rate sparklines feeding features 2, 6, 7.
 - **Decision:** spot a size whose reject rate is climbing mid-month, not at month-close.
 
@@ -80,6 +80,6 @@ Every module already reconciles parsed vs reported and tags gaps ("instrument"/"
 - Add a size-string parser (one shared helper) that extracts construction R/bias, rim diameter, aspect ratio, ply-rating, and YT-xxx mould code from production.json#top_sizes[].size — this unlocks features 2, 6, 7
 - Build the scrap/reject Pareto by size+mould (feature 2) directly from production.json b/r fields and feed it into quality.mjs's IATF 8.7 off-grade KPI which is currently plant-level only
 - Add empirical kg-per-tyre BOM coefficients (stock-balance monthly_consumption / production produced) and forecast ingredient burn off daily.mtd pace — extends the existing days-to-stockout logic in insights.mjs lines 33-61
-- Persist the per-size daily rows in daily-production.mjs (currently parsed then discarded at lines 68-82) to get a size-level daily attainment/off-grade series
+- Use `daily-production.json#by_size` and `#by_day_size` in the ERP for size-level daily attainment, grade mix, and off-grade drill-through
 - Compute diesel/heptane-per-tyre in quality.mjs (line 58 already flags diesel as 'tracked' but computes nothing) to fill the WCM Environment + Cost Deployment pillars
 - Add a unit-price field to inventory.mjs shipment extraction (PI prices are in the procurement emails extract.mjs already reads) to enable the carbon-black / NR / cord cost-exposure module against finance.json COGS

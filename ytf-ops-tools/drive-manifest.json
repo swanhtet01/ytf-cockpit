@@ -11,6 +11,14 @@
       "consumed_by": "production.mjs"
     },
     {
+      "role": "daily-production",
+      "fileId": "1nNsxMnZychBmtRtFtEZhkxzj7044o5Y3",
+      "title": "Tyre Production Daily Report 2026.xlsx",
+      "owner": "yangontyrefactory.bilin@gmail.com",
+      "cache": "Tyre Production Daily Report 2026.xlsx",
+      "consumed_by": "daily-production.mjs"
+    },
+    {
       "role": "stock-balance",
       "fileId": "1iLtVwHkvzL7K4Cr4u4uL4nJki9ou22TV",
       "title": "Monthly Stock Balance 2026.xlsx",

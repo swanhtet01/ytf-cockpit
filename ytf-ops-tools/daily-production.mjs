@@ -64,18 +64,92 @@ function mapCols(rows) {
   return null;
 }
 
+const sourcePlant = process.env.DAILY_PRODUCTION_PLANT || 'plant-b';
+
+function lineFromHeading(value) {
+  const text = norm(value).toUpperCase();
+  if (!text) return '';
+  if (/\bPCR\b|RADIAL/.test(text)) return 'PCR';
+  if (/\bMC\b|MOTORCYCLE/.test(text)) return 'MC';
+  if (/\bTBR\b|TRUCK|BUS/.test(text)) return 'TBR';
+  if (/\bAG\b|AGRIC/.test(text)) return 'AG';
+  return '';
+}
+
+function parseProductionCount(row, c) {
+  const a = n(row[c.a]);
+  let b = n(row[c.b]);
+  let reject = n(row[c.r]);
+  let total = n(row[c.total]);
+
+  // Some YTF sheets omit the reject cell on clean rows, shifting Total into the reject column.
+  if (!total && reject >= a + b && reject > 0) {
+    total = reject;
+    reject = Math.max(0, total - a - b);
+  }
+  // Other clean rows omit both B and R, shifting Total into the B column.
+  if (!total && !reject && b >= a && b > 0) {
+    total = b;
+    b = Math.max(0, total - a);
+  }
+  if (!total) total = a + b + reject;
+  return { a, b, reject, total };
+}
+
+function daySizeRows(s, date) {
+  const c = mapCols(s.rows);
+  if (!c) return [];
+  let line = '';
+  for (let i = 0; i <= c.headerRow; i++) {
+    line = lineFromHeading(s.rows[i]?.[0]) || line;
+  }
+  const rows = [];
+  for (let i = c.headerRow + 1; i < s.rows.length; i++) {
+    const row = s.rows[i];
+    const maybeLine = lineFromHeading(row[0]);
+    if (maybeLine) line = maybeLine;
+    const size = norm(row[c.size]);
+    if (!size) continue;
+    const counts = parseProductionCount(row, c);
+    if (counts.total <= 0 || counts.a <= 0) continue;
+    if (/^total$/i.test(size) || /percentage|percent/i.test(size)) continue;
+    rows.push({
+      date,
+      plant: sourcePlant,
+      line: line || 'Tyre',
+      size,
+      target: n(row[c.target]),
+      produced: counts.total,
+      grade_a: counts.a,
+      grade_b: counts.b,
+      reject: counts.reject,
+      off_grade: counts.b + counts.reject,
+      weight_kg: n(row[9]),
+    });
+  }
+  return rows;
+}
+
 // each day sheet has a grand-total row: size cell blank, Total numeric (largest)
-function dayTotal(s) {
+function dayTotal(s, sizeRows = []) {
+  if (sizeRows.length) {
+    return {
+      produced: sizeRows.reduce((sum, row) => sum + (row.produced || 0), 0),
+      target: sizeRows.reduce((sum, row) => sum + (row.target || 0), 0),
+      a: sizeRows.reduce((sum, row) => sum + (row.grade_a || 0), 0),
+      b: sizeRows.reduce((sum, row) => sum + (row.grade_b || 0), 0),
+      r: sizeRows.reduce((sum, row) => sum + (row.reject || 0), 0),
+    };
+  }
   const c = mapCols(s.rows);
   if (!c) return null;
   let best = null;
   for (let i = c.headerRow + 1; i < s.rows.length; i++) {
     const row = s.rows[i];
     if (norm(row[c.size])) continue;                 // size present => a product line, not a total
-    const tot = n(row[c.total]);
-    const a = n(row[c.a]);
-    if (tot > 100 && a > 0 && (!best || tot > best.produced)) {
-      best = { produced: tot, target: n(row[c.target]), a, b: n(row[c.b]), r: n(row[c.r]) };
+    const counts = parseProductionCount(row, c);
+    if (counts.total > 100 && counts.a > 0 && (!best || counts.total > best.produced)) {
+      best = { produced: counts.total, target: n(row[c.target]), a: counts.a, b: counts.b, r: counts.reject };
     }
   }
   return best;
@@ -83,7 +157,11 @@ function dayTotal(s) {
 
 const days = dayer
   .filter((x) => Number(x.m[2]) === wantMonth)
-  .map((x) => ({ date: `${2000 + Number(x.m[3])}-${String(wantMonth).padStart(2, '0')}-${String(Number(x.m[1])).padStart(2, '0')}`, t: dayTotal(x.s) }))
+  .map((x) => {
+    const date = `${2000 + Number(x.m[3])}-${String(wantMonth).padStart(2, '0')}-${String(Number(x.m[1])).padStart(2, '0')}`;
+    const sizeRows = daySizeRows(x.s, date);
+    return { date, sheet: x.s, sizeRows, t: dayTotal(x.s, sizeRows) };
+  })
   .filter((x) => x.t)
   .sort((a, b) => (a.date < b.date ? -1 : 1));
 
@@ -92,10 +170,40 @@ const produced = sum((t) => t.produced), target = sum((t) => t.target);
 const gA = sum((t) => t.a), gB = sum((t) => t.b), gR = sum((t) => t.r);
 const pct = (v) => (produced ? +(100 * v / produced).toFixed(1) : 0);
 const latest = days[days.length - 1];
+const byDaySize = days.flatMap((d) => d.sizeRows);
+const aggregate = (keyFn) => {
+  const map = new Map();
+  for (const row of byDaySize) {
+    const key = keyFn(row);
+    const cur = map.get(key) || { key, plant: row.plant, line: row.line, size: row.size, target: 0, produced: 0, grade_a: 0, grade_b: 0, reject: 0, off_grade: 0, weight_kg: 0, days: new Set(), latest_date: row.date };
+    cur.target += row.target || 0;
+    cur.produced += row.produced || 0;
+    cur.grade_a += row.grade_a || 0;
+    cur.grade_b += row.grade_b || 0;
+    cur.reject += row.reject || 0;
+    cur.off_grade += row.off_grade || 0;
+    cur.weight_kg += row.weight_kg || 0;
+    cur.days.add(row.date);
+    if (row.date > cur.latest_date) cur.latest_date = row.date;
+    map.set(key, cur);
+  }
+  return [...map.values()].map((x) => ({
+    ...x,
+    days_reported: x.days.size,
+    days: undefined,
+    attainment_pct: x.target ? +(100 * x.produced / x.target).toFixed(1) : null,
+    grade_a_pct: x.produced ? +(100 * x.grade_a / x.produced).toFixed(1) : null,
+    weight_kg: +x.weight_kg.toFixed(2),
+  })).sort((a, b) => b.produced - a.produced);
+};
+const bySize = aggregate((row) => `${row.line}|${row.size}`);
+const byLine = aggregate((row) => row.line).map((row) => ({ ...row, size: undefined }));
+const latestRows = byDaySize.filter((row) => row.date === latest?.date).sort((a, b) => b.produced - a.produced);
 
 const out = {
   generated_at: new Date().toISOString(),
   source: path.basename(inPath),
+  plant: sourcePlant,
   month: `${wantYear}-${String(wantMonth).padStart(2, '0')}`,
   as_of: latest?.date || null,
   days_reported: days.length,
@@ -107,6 +215,10 @@ const out = {
     avg_per_day: days.length ? Math.round(produced / days.length) : 0,
   },
   by_day: days.map((d) => ({ date: d.date, produced: d.t.produced, target: d.t.target, off_grade: d.t.b + d.t.r })),
+  by_line: byLine,
+  by_size: bySize,
+  by_day_size: byDaySize,
+  latest_day: latest ? { date: latest.date, rows: latestRows } : null,
 };
 fs.writeFileSync(path.join(outDir, 'daily-production.json'), JSON.stringify(out, null, 2) + '\n');
 
