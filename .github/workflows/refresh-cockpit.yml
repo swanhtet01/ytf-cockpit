@@ -56,7 +56,7 @@ jobs:
         env:
           GOOGLE_SA_KEY: ${{ secrets.GOOGLE_SA_KEY }}
         run: |
-          node crawl-drive.mjs || echo "crawl-drive failed (non-fatal) — generators fall back gracefully"
+          timeout 180s node crawl-drive.mjs || echo "crawl-drive failed or timed out (non-fatal) — generators fall back gracefully"
 
       - name: Fetch manual entries from app
         env:
