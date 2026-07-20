@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '0 */3 * * *'   # every 3 hours (was twice daily) — fresher stock/production, fewer blind spots
   workflow_dispatch:         # + on-demand: a "Refresh now" button / api/sync-ops can dispatch this
+  push:
+    paths:
+      - '.github/workflows/refresh-cockpit.yml'   # editing this file re-arms + smoke-tests the schedule (api.github.com unreachable from the ops network, so dispatch-by-push is the fallback)
 
 concurrency:
   group: refresh-cockpit
